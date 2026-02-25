@@ -1,3 +1,5 @@
+import { useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   DollarSign,
   Package,
@@ -21,73 +23,94 @@ import {
   BarChart,
   Bar,
 } from "recharts";
-
-const salesData = [
-  { day: "Mon", sales: 4200, purchases: 2400 },
-  { day: "Tue", sales: 3800, purchases: 1800 },
-  { day: "Wed", sales: 5100, purchases: 3200 },
-  { day: "Thu", sales: 4700, purchases: 2100 },
-  { day: "Fri", sales: 5900, purchases: 2800 },
-  { day: "Sat", sales: 6200, purchases: 3100 },
-  { day: "Sun", sales: 3500, purchases: 1500 },
-];
-
-const topMedicines = [
-  { name: "Paracetamol 500mg", sold: 342 },
-  { name: "Amoxicillin 250mg", sold: 287 },
-  { name: "Omeprazole 20mg", sold: 234 },
-  { name: "Metformin 500mg", sold: 198 },
-  { name: "Cetirizine 10mg", sold: 176 },
-];
-
-const stats = [
-  {
-    title: "Today's Sales",
-    value: "$12,426",
-    change: "+12.5%",
-    up: true,
-    icon: DollarSign,
-    color: "text-primary",
-    bg: "bg-primary/10",
-  },
-  {
-    title: "Monthly Revenue",
-    value: "$284,500",
-    change: "+8.2%",
-    up: true,
-    icon: TrendingUp,
-    color: "text-accent",
-    bg: "bg-accent/10",
-  },
-  {
-    title: "Total Products",
-    value: "2,847",
-    change: "+24",
-    up: true,
-    icon: Package,
-    color: "text-info",
-    bg: "bg-info/10",
-  },
-  {
-    title: "Expired Alerts",
-    value: "18",
-    change: "+3",
-    up: false,
-    icon: AlertTriangle,
-    color: "text-warning",
-    bg: "bg-warning/10",
-  },
-];
-
-const recentSales = [
-  { id: "INV-001", customer: "Ahmed Khan", items: 5, total: "$245.00", time: "2 min ago" },
-  { id: "INV-002", customer: "Sara Ali", items: 3, total: "$128.50", time: "15 min ago" },
-  { id: "INV-003", customer: "Walk-in", items: 1, total: "$45.00", time: "32 min ago" },
-  { id: "INV-004", customer: "Fatima Noor", items: 8, total: "$567.25", time: "1 hr ago" },
-  { id: "INV-005", customer: "Omar Hassan", items: 2, total: "$89.00", time: "2 hr ago" },
-];
+import {
+  useSalesStore,
+  getTodaySales,
+  getThisMonthSales,
+  getWeeklySalesChart,
+  getTopMedicines,
+  formatTimeAgo,
+} from "@/stores/sales-store";
 
 const Dashboard = () => {
+  const sales = useSalesStore((s) => s.sales);
+  const navigate = useNavigate();
+
+  const todaySales = useMemo(() => getTodaySales(sales), [sales]);
+  const monthSales = useMemo(() => getThisMonthSales(sales), [sales]);
+  const weeklyChart = useMemo(() => getWeeklySalesChart(sales), [sales]);
+  const topMeds = useMemo(() => getTopMedicines(sales), [sales]);
+
+  const todayTotal = todaySales.reduce((s, r) => s + r.total, 0);
+  const monthTotal = monthSales.reduce((s, r) => s + r.total, 0);
+  const todayCount = todaySales.length;
+
+  // Yesterday comparison
+  const yesterday = new Date();
+  yesterday.setDate(yesterday.getDate() - 1);
+  yesterday.setHours(0, 0, 0, 0);
+  const yesterdayEnd = new Date(yesterday);
+  yesterdayEnd.setDate(yesterdayEnd.getDate() + 1);
+  const yesterdaySales = sales.filter((s) => s.date >= yesterday && s.date < yesterdayEnd);
+  const yesterdayTotal = yesterdaySales.reduce((s, r) => s + r.total, 0);
+  const todayChange = yesterdayTotal > 0 ? ((todayTotal - yesterdayTotal) / yesterdayTotal) * 100 : 0;
+
+  const recentSales = useMemo(
+    () =>
+      [...sales]
+        .sort((a, b) => b.date.getTime() - a.date.getTime())
+        .slice(0, 8),
+    [sales]
+  );
+
+  const fmt = (n: number) =>
+    n >= 1000 ? `$${(n / 1000).toFixed(1)}k` : `$${n.toFixed(0)}`;
+  const fmtFull = (n: number) =>
+    `$${n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+  const stats = [
+    {
+      title: "Today's Sales",
+      value: fmtFull(todayTotal),
+      change: `${todayChange >= 0 ? "+" : ""}${todayChange.toFixed(1)}%`,
+      up: todayChange >= 0,
+      subtitle: `${todayCount} transactions`,
+      icon: DollarSign,
+      color: "text-primary",
+      bg: "bg-primary/10",
+    },
+    {
+      title: "Monthly Revenue",
+      value: fmtFull(monthTotal),
+      change: `${monthSales.length} sales`,
+      up: true,
+      subtitle: "This month",
+      icon: TrendingUp,
+      color: "text-accent",
+      bg: "bg-accent/10",
+    },
+    {
+      title: "Items Sold Today",
+      value: String(todaySales.reduce((s, r) => s + r.items.reduce((a, i) => a + i.qty, 0), 0)),
+      change: `${todaySales.length} invoices`,
+      up: true,
+      subtitle: "Total units",
+      icon: Package,
+      color: "text-info",
+      bg: "bg-info/10",
+    },
+    {
+      title: "Avg. Order Value",
+      value: todayCount > 0 ? fmtFull(todayTotal / todayCount) : "$0.00",
+      change: todayCount > 0 ? `Per sale` : "No sales",
+      up: true,
+      subtitle: "Today",
+      icon: AlertTriangle,
+      color: "text-warning",
+      bg: "bg-warning/10",
+    },
+  ];
+
   return (
     <div className="space-y-6 animate-fade-in">
       <div>
@@ -110,11 +133,7 @@ const Dashboard = () => {
                     ) : (
                       <ArrowDownRight className="h-3 w-3 text-destructive" />
                     )}
-                    <span
-                      className={`text-xs font-medium ${
-                        stat.up ? "text-accent" : "text-destructive"
-                      }`}
-                    >
+                    <span className={`text-xs font-medium ${stat.up ? "text-accent" : "text-destructive"}`}>
                       {stat.change}
                     </span>
                   </div>
@@ -132,24 +151,20 @@ const Dashboard = () => {
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
         <Card className="lg:col-span-2 border-none shadow-sm">
           <CardHeader className="pb-2">
-            <CardTitle className="text-base font-heading">Sales & Purchases Overview</CardTitle>
+            <CardTitle className="text-base font-heading">Weekly Sales Overview</CardTitle>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={280}>
-              <AreaChart data={salesData}>
+              <AreaChart data={weeklyChart}>
                 <defs>
                   <linearGradient id="salesGrad" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="0%" stopColor="hsl(217, 91%, 50%)" stopOpacity={0.2} />
                     <stop offset="100%" stopColor="hsl(217, 91%, 50%)" stopOpacity={0} />
                   </linearGradient>
-                  <linearGradient id="purchGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="hsl(160, 60%, 45%)" stopOpacity={0.2} />
-                    <stop offset="100%" stopColor="hsl(160, 60%, 45%)" stopOpacity={0} />
-                  </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-                <XAxis dataKey="day" className="text-xs" tick={{ fill: 'hsl(215, 15%, 47%)' }} />
-                <YAxis className="text-xs" tick={{ fill: 'hsl(215, 15%, 47%)' }} />
+                <XAxis dataKey="day" className="text-xs" tick={{ fill: "hsl(215, 15%, 47%)" }} />
+                <YAxis className="text-xs" tick={{ fill: "hsl(215, 15%, 47%)" }} tickFormatter={(v) => `$${v >= 1000 ? `${(v/1000).toFixed(0)}k` : v}`} />
                 <Tooltip
                   contentStyle={{
                     backgroundColor: "hsl(0, 0%, 100%)",
@@ -157,9 +172,9 @@ const Dashboard = () => {
                     borderRadius: "8px",
                     fontSize: "12px",
                   }}
+                  formatter={(value: number) => [`$${value.toFixed(2)}`, "Sales"]}
                 />
                 <Area type="monotone" dataKey="sales" stroke="hsl(217, 91%, 50%)" fill="url(#salesGrad)" strokeWidth={2} />
-                <Area type="monotone" dataKey="purchases" stroke="hsl(160, 60%, 45%)" fill="url(#purchGrad)" strokeWidth={2} />
               </AreaChart>
             </ResponsiveContainer>
           </CardContent>
@@ -170,21 +185,27 @@ const Dashboard = () => {
             <CardTitle className="text-base font-heading">Top Selling Medicines</CardTitle>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={280}>
-              <BarChart data={topMedicines} layout="vertical" margin={{ left: 20 }}>
-                <XAxis type="number" tick={{ fill: 'hsl(215, 15%, 47%)', fontSize: 11 }} />
-                <YAxis type="category" dataKey="name" tick={{ fill: 'hsl(215, 15%, 47%)', fontSize: 11 }} width={110} />
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: "hsl(0, 0%, 100%)",
-                    border: "1px solid hsl(214, 20%, 90%)",
-                    borderRadius: "8px",
-                    fontSize: "12px",
-                  }}
-                />
-                <Bar dataKey="sold" fill="hsl(217, 91%, 50%)" radius={[0, 4, 4, 0]} barSize={18} />
-              </BarChart>
-            </ResponsiveContainer>
+            {topMeds.length > 0 ? (
+              <ResponsiveContainer width="100%" height={280}>
+                <BarChart data={topMeds} layout="vertical" margin={{ left: 20 }}>
+                  <XAxis type="number" tick={{ fill: "hsl(215, 15%, 47%)", fontSize: 11 }} />
+                  <YAxis type="category" dataKey="name" tick={{ fill: "hsl(215, 15%, 47%)", fontSize: 11 }} width={110} />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: "hsl(0, 0%, 100%)",
+                      border: "1px solid hsl(214, 20%, 90%)",
+                      borderRadius: "8px",
+                      fontSize: "12px",
+                    }}
+                  />
+                  <Bar dataKey="sold" fill="hsl(217, 91%, 50%)" radius={[0, 4, 4, 0]} barSize={18} />
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="flex items-center justify-center h-[280px] text-sm text-muted-foreground">
+                No sales data yet
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
@@ -210,11 +231,11 @@ const Dashboard = () => {
                 <tbody>
                   {recentSales.map((sale) => (
                     <tr key={sale.id} className="border-b border-border/50 last:border-0">
-                      <td className="py-3 font-medium text-primary">{sale.id}</td>
-                      <td className="py-3">{sale.customer}</td>
-                      <td className="py-3">{sale.items}</td>
-                      <td className="py-3 font-medium">{sale.total}</td>
-                      <td className="py-3 text-muted-foreground">{sale.time}</td>
+                      <td className="py-3 font-medium text-primary">{sale.invoiceNo}</td>
+                      <td className="py-3">{sale.customerName || "Walk-in"}</td>
+                      <td className="py-3">{sale.items.length}</td>
+                      <td className="py-3 font-medium">${sale.total.toFixed(2)}</td>
+                      <td className="py-3 text-muted-foreground">{formatTimeAgo(sale.date)}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -229,13 +250,14 @@ const Dashboard = () => {
           </CardHeader>
           <CardContent className="space-y-2">
             {[
-              { icon: ShoppingCart, label: "New Sale", color: "bg-primary/10 text-primary" },
-              { icon: Pill, label: "Add Medicine", color: "bg-accent/10 text-accent" },
-              { icon: Package, label: "New Purchase", color: "bg-info/10 text-info" },
-              { icon: Users, label: "Add Customer", color: "bg-warning/10 text-warning" },
+              { icon: ShoppingCart, label: "New Sale", color: "bg-primary/10 text-primary", path: "/pos" },
+              { icon: Pill, label: "Add Medicine", color: "bg-accent/10 text-accent", path: "/medicines" },
+              { icon: Package, label: "New Purchase", color: "bg-info/10 text-info", path: "/purchases" },
+              { icon: Users, label: "Add Customer", color: "bg-warning/10 text-warning", path: "/customers" },
             ].map((action) => (
               <button
                 key={action.label}
+                onClick={() => navigate(action.path)}
                 className="flex w-full items-center gap-3 rounded-lg border border-border/50 p-3 text-sm font-medium hover:bg-muted/50 transition-colors"
               >
                 <div className={`flex h-9 w-9 items-center justify-center rounded-lg ${action.color}`}>

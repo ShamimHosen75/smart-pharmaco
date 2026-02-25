@@ -12,6 +12,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { printInvoice, generateInvoiceNo, type InvoiceData } from "@/lib/invoice-printer";
+import { useSalesStore } from "@/stores/sales-store";
 
 interface CartItem {
   id: number;
@@ -72,10 +73,14 @@ const POS = () => {
     m.name.toLowerCase().includes(search.toLowerCase())
   );
 
+  const addSale = useSalesStore((s) => s.addSale);
+
   const completeSale = () => {
+    const invoiceNo = generateInvoiceNo();
+    const now = new Date();
     const invoice: InvoiceData = {
-      invoiceNo: generateInvoiceNo(),
-      date: new Date().toLocaleDateString("en-US", {
+      invoiceNo,
+      date: now.toLocaleDateString("en-US", {
         year: "numeric", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit",
       }),
       customerName,
@@ -87,6 +92,20 @@ const POS = () => {
       total,
       paymentMethod,
     };
+    // Record in store
+    addSale({
+      id: crypto.randomUUID(),
+      invoiceNo,
+      date: now,
+      customerName,
+      customerPhone,
+      items: invoice.items,
+      subtotal,
+      discount: discountAmt,
+      vat,
+      total,
+      paymentMethod,
+    });
     setLastInvoice(invoice);
     setShowInvoiceDialog(true);
   };
