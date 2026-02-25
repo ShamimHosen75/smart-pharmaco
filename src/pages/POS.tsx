@@ -1,10 +1,17 @@
 import { useState } from "react";
-import { Search, Plus, Minus, Trash2, CreditCard, Banknote, Smartphone } from "lucide-react";
+import { Search, Plus, Minus, Trash2, CreditCard, Banknote, Smartphone, Printer, Receipt, FileText, Check } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { printInvoice, generateInvoiceNo, type InvoiceData } from "@/lib/invoice-printer";
 
 interface CartItem {
   id: number;
@@ -33,6 +40,10 @@ const POS = () => {
   const [search, setSearch] = useState("");
   const [discount, setDiscount] = useState(0);
   const [paymentMethod, setPaymentMethod] = useState("cash");
+  const [customerName, setCustomerName] = useState("");
+  const [customerPhone, setCustomerPhone] = useState("");
+  const [showInvoiceDialog, setShowInvoiceDialog] = useState(false);
+  const [lastInvoice, setLastInvoice] = useState<InvoiceData | null>(null);
 
   const addToCart = (med: typeof quickMeds[0]) => {
     setCart((prev) => {
@@ -60,6 +71,38 @@ const POS = () => {
   const filteredMeds = quickMeds.filter((m) =>
     m.name.toLowerCase().includes(search.toLowerCase())
   );
+
+  const completeSale = () => {
+    const invoice: InvoiceData = {
+      invoiceNo: generateInvoiceNo(),
+      date: new Date().toLocaleDateString("en-US", {
+        year: "numeric", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit",
+      }),
+      customerName,
+      customerPhone,
+      items: cart.map((c) => ({ name: c.name, qty: c.qty, price: c.price })),
+      subtotal,
+      discount: discountAmt,
+      vat,
+      total,
+      paymentMethod,
+    };
+    setLastInvoice(invoice);
+    setShowInvoiceDialog(true);
+  };
+
+  const handlePrint = (format: "thermal" | "a4") => {
+    if (lastInvoice) printInvoice(format, lastInvoice);
+  };
+
+  const handleDone = () => {
+    setShowInvoiceDialog(false);
+    setCart([]);
+    setCustomerName("");
+    setCustomerPhone("");
+    setDiscount(0);
+    setLastInvoice(null);
+  };
 
   return (
     <div className="animate-fade-in h-[calc(100vh-7rem)]">
@@ -108,8 +151,8 @@ const POS = () => {
           <CardContent className="flex-1 flex flex-col p-4 pt-0">
             {/* Customer */}
             <div className="grid grid-cols-2 gap-2 mb-3">
-              <Input placeholder="Customer name" className="text-sm" />
-              <Input placeholder="Phone number" className="text-sm" />
+              <Input placeholder="Customer name" className="text-sm" value={customerName} onChange={(e) => setCustomerName(e.target.value)} />
+              <Input placeholder="Phone number" className="text-sm" value={customerPhone} onChange={(e) => setCustomerPhone(e.target.value)} />
             </div>
 
             {/* Cart items */}
@@ -183,12 +226,74 @@ const POS = () => {
               ))}
             </div>
 
-            <Button className="w-full mt-3" size="lg" disabled={cart.length === 0}>
+            <Button className="w-full mt-3" size="lg" disabled={cart.length === 0} onClick={completeSale}>
               Complete Sale — ${total.toFixed(2)}
             </Button>
           </CardContent>
         </Card>
       </div>
+
+      {/* Invoice Print Dialog */}
+      <Dialog open={showInvoiceDialog} onOpenChange={setShowInvoiceDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="font-heading flex items-center gap-2">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-accent/10">
+                <Check className="h-5 w-5 text-accent" />
+              </div>
+              Sale Completed!
+            </DialogTitle>
+          </DialogHeader>
+          {lastInvoice && (
+            <div className="space-y-4">
+              <div className="rounded-lg bg-muted/30 p-4 space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Invoice</span>
+                  <span className="font-mono font-medium">{lastInvoice.invoiceNo}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Customer</span>
+                  <span>{lastInvoice.customerName || "Walk-in"}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Items</span>
+                  <span>{lastInvoice.items.length}</span>
+                </div>
+                <Separator />
+                <div className="flex justify-between font-heading font-bold text-lg">
+                  <span>Total</span>
+                  <span className="text-primary">${lastInvoice.total.toFixed(2)}</span>
+                </div>
+              </div>
+
+              <p className="text-sm text-muted-foreground text-center">Choose print format</p>
+
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  onClick={() => handlePrint("thermal")}
+                  className="flex flex-col items-center gap-2 rounded-xl border-2 border-border p-5 hover:border-primary/40 hover:bg-primary/5 transition-all"
+                >
+                  <Receipt className="h-8 w-8 text-primary" />
+                  <span className="text-sm font-heading font-semibold">Thermal</span>
+                  <span className="text-[11px] text-muted-foreground">80mm Receipt</span>
+                </button>
+                <button
+                  onClick={() => handlePrint("a4")}
+                  className="flex flex-col items-center gap-2 rounded-xl border-2 border-border p-5 hover:border-primary/40 hover:bg-primary/5 transition-all"
+                >
+                  <FileText className="h-8 w-8 text-accent" />
+                  <span className="text-sm font-heading font-semibold">A4</span>
+                  <span className="text-[11px] text-muted-foreground">Full Invoice</span>
+                </button>
+              </div>
+
+              <Button variant="outline" className="w-full" onClick={handleDone}>
+                Done — New Sale
+              </Button>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
