@@ -1,0 +1,174 @@
+import { useState } from "react";
+import { Link, useLocation } from "react-router-dom";
+import {
+  LayoutDashboard,
+  Pill,
+  ShoppingCart,
+  Package,
+  Users,
+  BarChart3,
+  Settings,
+  Building2,
+  AlertTriangle,
+  DollarSign,
+  UserCog,
+  Globe,
+  ChevronLeft,
+  ChevronRight,
+  LogOut,
+  Bell,
+  Search,
+} from "lucide-react";
+import { cn } from "@/lib/utils";
+
+const navGroups = [
+  {
+    label: "Main",
+    items: [
+      { title: "Dashboard", icon: LayoutDashboard, path: "/" },
+      { title: "POS Sales", icon: ShoppingCart, path: "/pos" },
+    ],
+  },
+  {
+    label: "Inventory",
+    items: [
+      { title: "Medicines", icon: Pill, path: "/medicines" },
+      { title: "Companies", icon: Building2, path: "/companies" },
+      { title: "Purchases", icon: Package, path: "/purchases" },
+      { title: "Expiry Alerts", icon: AlertTriangle, path: "/alerts" },
+    ],
+  },
+  {
+    label: "People",
+    items: [
+      { title: "Customers", icon: Users, path: "/customers" },
+      { title: "Employees", icon: UserCog, path: "/employees" },
+    ],
+  },
+  {
+    label: "Finance",
+    items: [
+      { title: "Accounting", icon: DollarSign, path: "/accounting" },
+      { title: "Reports", icon: BarChart3, path: "/reports" },
+    ],
+  },
+  {
+    label: "System",
+    items: [
+      { title: "Branches", icon: Globe, path: "/branches" },
+      { title: "Settings", icon: Settings, path: "/settings" },
+    ],
+  },
+];
+
+export default function AppLayout({ children }: { children: React.ReactNode }) {
+  const [collapsed, setCollapsed] = useState(false);
+  const location = useLocation();
+
+  return (
+    <div className="flex h-screen overflow-hidden">
+      {/* Sidebar */}
+      <aside
+        className={cn(
+          "flex flex-col bg-sidebar text-sidebar-foreground transition-all duration-300 ease-in-out",
+          collapsed ? "w-[68px]" : "w-[250px]"
+        )}
+      >
+        {/* Logo */}
+        <div className="flex h-16 items-center gap-2 border-b border-sidebar-border px-4">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground font-heading font-bold text-sm">
+            M
+          </div>
+          {!collapsed && (
+            <div className="animate-slide-in">
+              <h1 className="font-heading font-bold text-sm text-sidebar-primary-foreground leading-tight">
+                MediCore
+              </h1>
+              <p className="text-[10px] text-sidebar-foreground/60">Pharmacy POS</p>
+            </div>
+          )}
+        </div>
+
+        {/* Nav */}
+        <nav className="flex-1 overflow-y-auto py-4 px-2 space-y-6">
+          {navGroups.map((group) => (
+            <div key={group.label}>
+              {!collapsed && (
+                <p className="px-3 mb-2 text-[10px] font-semibold uppercase tracking-wider text-sidebar-foreground/40">
+                  {group.label}
+                </p>
+              )}
+              <div className="space-y-0.5">
+                {group.items.map((item) => {
+                  const active = location.pathname === item.path;
+                  return (
+                    <Link
+                      key={item.path}
+                      to={item.path}
+                      className={cn(
+                        "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors",
+                        active
+                          ? "bg-sidebar-accent text-sidebar-primary-foreground font-medium"
+                          : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground"
+                      )}
+                    >
+                      <item.icon className="h-4 w-4 shrink-0" />
+                      {!collapsed && <span>{item.title}</span>}
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
+        </nav>
+
+        {/* Collapse toggle */}
+        <div className="border-t border-sidebar-border p-2">
+          <button
+            onClick={() => setCollapsed(!collapsed)}
+            className="flex w-full items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm text-sidebar-foreground/60 hover:bg-sidebar-accent/50 transition-colors"
+          >
+            {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
+            {!collapsed && <span>Collapse</span>}
+          </button>
+        </div>
+      </aside>
+
+      {/* Main content */}
+      <div className="flex flex-1 flex-col overflow-hidden">
+        {/* Top bar */}
+        <header className="flex h-16 items-center justify-between border-b border-border bg-card px-6">
+          <div className="relative w-80">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <input
+              type="text"
+              placeholder="Search medicines, customers..."
+              className="h-9 w-full rounded-lg border border-input bg-background pl-10 pr-4 text-sm outline-none focus:ring-2 focus:ring-ring/20 transition-shadow"
+            />
+          </div>
+          <div className="flex items-center gap-3">
+            <button className="relative rounded-lg p-2 text-muted-foreground hover:bg-muted transition-colors">
+              <Bell className="h-5 w-5" />
+              <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-destructive" />
+            </button>
+            <div className="h-8 w-px bg-border" />
+            <div className="flex items-center gap-2">
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-semibold">
+                SA
+              </div>
+              <div className="hidden md:block">
+                <p className="text-sm font-medium leading-tight">Super Admin</p>
+                <p className="text-[11px] text-muted-foreground">Main Branch</p>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        {/* Page content */}
+        <main className="flex-1 overflow-y-auto p-6">
+          {children}
+        </main>
+      </div>
+    </div>
+  );
+}
