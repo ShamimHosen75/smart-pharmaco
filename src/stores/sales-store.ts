@@ -14,6 +14,20 @@ export interface SaleRecord {
   paymentMethod: string;
 }
 
+export interface RefundRecord {
+  id: string;
+  refundNo: string;
+  originalInvoiceNo: string;
+  date: Date;
+  customerName: string;
+  items: { name: string; qty: number; price: number }[];
+  subtotal: number;
+  vat: number;
+  total: number;
+  reason: string;
+  refundMethod: string;
+}
+
 // Seed data: past 7 days of sales for a realistic dashboard
 function generateSeedSales(): SaleRecord[] {
   const medicines = [
@@ -28,7 +42,7 @@ function generateSeedSales(): SaleRecord[] {
   const now = new Date();
 
   for (let dayOffset = 6; dayOffset >= 0; dayOffset--) {
-    const numSales = 8 + Math.floor(Math.random() * 12); // 8-19 sales per day
+    const numSales = 8 + Math.floor(Math.random() * 12);
     for (let s = 0; s < numSales; s++) {
       const d = new Date(now);
       d.setDate(d.getDate() - dayOffset);
@@ -68,12 +82,18 @@ function generateSeedSales(): SaleRecord[] {
 
 interface SalesStore {
   sales: SaleRecord[];
+  refunds: RefundRecord[];
   addSale: (sale: SaleRecord) => void;
+  addRefund: (refund: RefundRecord) => void;
+  getRefundsForInvoice: (invoiceNo: string) => RefundRecord[];
 }
 
-export const useSalesStore = create<SalesStore>((set) => ({
+export const useSalesStore = create<SalesStore>((set, get) => ({
   sales: generateSeedSales(),
+  refunds: [],
   addSale: (sale) => set((state) => ({ sales: [...state.sales, sale] })),
+  addRefund: (refund) => set((state) => ({ refunds: [...state.refunds, refund] })),
+  getRefundsForInvoice: (invoiceNo) => get().refunds.filter((r) => r.originalInvoiceNo === invoiceNo),
 }));
 
 // Derived helpers
