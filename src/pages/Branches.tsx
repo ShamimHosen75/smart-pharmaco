@@ -109,10 +109,11 @@ const Branches = () => {
 
   const save = () => {
     if (!validate()) return;
+    const data = { ...form, status: form.status as "active" | "inactive" };
     if (editId) {
-      updateBranch(editId, form);
+      updateBranch(editId, data);
     } else {
-      addBranch(form);
+      addBranch(data);
     }
     setDialogOpen(false);
     setForm(emptyForm);
