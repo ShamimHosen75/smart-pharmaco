@@ -36,14 +36,22 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useBranchStore, type Branch } from "@/stores/branch-store";
 
-const emptyForm = {
+const emptyForm: {
+  name: string;
+  address: string;
+  city: string;
+  phone: string;
+  manager: string;
+  email: string;
+  status: "active" | "inactive";
+} = {
   name: "",
   address: "",
   city: "",
   phone: "",
   manager: "",
   email: "",
-  status: "active" as const,
+  status: "active",
 };
 
 const Branches = () => {
