@@ -41,7 +41,7 @@ const statusVariant = (s: string) => {
 
 const Purchases = () => {
   const { purchases, addPurchase, updatePurchase, deletePurchase } = usePurchaseStore();
-  const { companies } = useCompanyStore();
+  const { companies, updateCompany } = useCompanyStore();
   const activeCompanies = companies.filter((c) => c.status === "active");
 
   const [search, setSearch] = useState("");
@@ -132,6 +132,14 @@ const Purchases = () => {
       updatePurchase(editId, payload);
     } else {
       addPurchase(payload as any);
+      // Update supplier company stats
+      if (company) {
+        updateCompany(company.id, {
+          totalOrders: company.totalOrders + 1,
+          totalValue: company.totalValue + total,
+          lastSupply: form.date,
+        });
+      }
     }
     setDialogOpen(false);
   };
