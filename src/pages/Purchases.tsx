@@ -41,7 +41,7 @@ const statusVariant = (s: string) => {
 
 const Purchases = () => {
   const { purchases, addPurchase, updatePurchase, deletePurchase } = usePurchaseStore();
-  const { companies } = useCompanyStore();
+  const { companies, updateCompany } = useCompanyStore();
   const activeCompanies = companies.filter((c) => c.status === "active");
 
   const [search, setSearch] = useState("");
