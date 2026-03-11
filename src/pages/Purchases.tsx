@@ -163,7 +163,7 @@ const Purchases = () => {
         </Card>
         <Card className="border-none shadow-sm">
           <CardContent className="p-4 flex items-center gap-3">
-            <div className="h-10 w-10 rounded-lg bg-yellow-500/10 flex items-center justify-center"><Clock className="h-5 w-5 text-yellow-600" /></div>
+            <div className="h-10 w-10 rounded-lg bg-secondary flex items-center justify-center"><Clock className="h-5 w-5 text-secondary-foreground" /></div>
             <div><p className="text-xs text-muted-foreground">Pending</p><p className="text-xl font-heading font-bold">{pendingCount}</p></div>
           </CardContent>
         </Card>
