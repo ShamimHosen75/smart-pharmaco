@@ -472,7 +472,7 @@ const POS = () => {
                 </div>
               </div>
 
-              <p className="text-sm text-muted-foreground text-center">Choose print format</p>
+              <p className="text-sm text-muted-foreground text-center">Print or download as PDF</p>
 
               <div className="grid grid-cols-2 gap-3">
                 <button
@@ -491,6 +491,15 @@ const POS = () => {
                   <span className="text-sm font-heading font-semibold">A4</span>
                   <span className="text-[11px] text-muted-foreground">Full Invoice</span>
                 </button>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <Button variant="outline" size="sm" onClick={() => handleDownloadPDF("thermal")}>
+                  <Download className="h-3.5 w-3.5 mr-1" /> PDF Thermal
+                </Button>
+                <Button variant="outline" size="sm" onClick={() => handleDownloadPDF("a4")}>
+                  <Download className="h-3.5 w-3.5 mr-1" /> PDF A4
+                </Button>
               </div>
 
               <Button variant="outline" className="w-full" onClick={handleDone}>
