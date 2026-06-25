@@ -20,6 +20,8 @@ function triggerDownload(blob: Blob, filename: string) {
 export interface SalesExportOptions {
   title: string;
   branchName?: string;
+  /** Optional resolver for per-sale branch name (used when exporting across branches). */
+  branchNameOf?: (s: SaleRecord) => string;
   filename: string;
 }
 
@@ -41,10 +43,11 @@ export function exportSalesCSV(sales: SaleRecord[], opts: SalesExportOptions) {
   for (const s of sales) {
     const date = s.date.toLocaleDateString();
     const time = s.date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    const branch = opts.branchNameOf ? opts.branchNameOf(s) : (opts.branchName ?? "");
     for (const i of s.items) {
       lines.push([
         s.invoiceNo, date, time,
-        opts.branchName ?? "",
+        branch,
         s.customerName || "Walk-in", s.customerPhone || "",
         i.name, i.batch ?? "", i.expiry ?? "",
         i.qty, i.price.toFixed(2), (i.qty * i.price).toFixed(2),
