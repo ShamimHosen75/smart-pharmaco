@@ -103,30 +103,109 @@ const Receipts = () => {
     }
   };
 
+  const exportLabel = () => {
+    const parts: string[] = ["receipts"];
+    if (branchFilter !== "all") parts.push(branchName(branchFilter).toLowerCase().replace(/\s+/g, "-"));
+    if (fromDate) parts.push(fromDate);
+    if (toDate) parts.push(toDate);
+    return parts.join("_");
+  };
+
+  const handleExportCSV = () => {
+    if (filtered.length === 0) {
+      toast({ title: "Nothing to export", description: "No receipts match the current filters.", variant: "destructive" });
+      return;
+    }
+    exportSalesCSV(filtered, {
+      title: "Receipts Export",
+      filename: exportLabel(),
+      branchName: branchFilter !== "all" ? branchName(branchFilter) : undefined,
+      branchNameOf: branchFilter === "all" ? (s) => branchName(s.branchId) : undefined,
+    });
+    toast({ title: "CSV downloaded", description: `${filtered.length} receipt(s) exported with batch & expiry.` });
+  };
+
+  const handleExportPDF = async () => {
+    if (filtered.length === 0) {
+      toast({ title: "Nothing to export", description: "No receipts match the current filters.", variant: "destructive" });
+      return;
+    }
+    toast({ title: "Preparing PDF...", description: `${filtered.length} receipt(s)` });
+    try {
+      await exportSalesPDF(filtered, {
+        title: "Receipts Export" + (branchFilter !== "all" ? ` — ${branchName(branchFilter)}` : ""),
+        filename: exportLabel(),
+        branchName: branchFilter !== "all" ? branchName(branchFilter) : "All branches",
+      });
+    } catch (e) {
+      toast({ title: "PDF failed", description: String(e), variant: "destructive" });
+    }
+  };
+
+  const clearDates = () => { setFromDate(""); setToDate(""); };
+
   return (
     <div className="animate-fade-in space-y-4">
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-2xl font-heading font-bold">Receipts</h1>
           <p className="text-sm text-muted-foreground">
-            Reprint or download past invoices by branch
+            Reprint, download, or export past invoices with batch & expiry audit trail
           </p>
         </div>
-        <div className="flex items-center gap-2">
-          <Store className="h-4 w-4 text-muted-foreground" />
-          <Select value={branchFilter} onValueChange={setBranchFilter}>
-            <SelectTrigger className="w-[220px]">
-              <SelectValue placeholder="All branches" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All branches</SelectItem>
-              {branches.map((b) => (
-                <SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+        <div className="flex items-end gap-2 flex-wrap">
+          <div className="flex flex-col gap-1">
+            <Label className="text-[10px] uppercase tracking-wide text-muted-foreground">From</Label>
+            <Input type="date" value={fromDate} onChange={(e) => setFromDate(e.target.value)} className="w-[150px] h-9" />
+          </div>
+          <div className="flex flex-col gap-1">
+            <Label className="text-[10px] uppercase tracking-wide text-muted-foreground">To</Label>
+            <Input type="date" value={toDate} onChange={(e) => setToDate(e.target.value)} className="w-[150px] h-9" />
+          </div>
+          {(fromDate || toDate) && (
+            <Button variant="ghost" size="sm" onClick={clearDates} className="h-9">
+              <Calendar className="h-3.5 w-3.5 mr-1" /> Clear
+            </Button>
+          )}
+          <div className="flex flex-col gap-1">
+            <Label className="text-[10px] uppercase tracking-wide text-muted-foreground">Branch</Label>
+            <div className="flex items-center gap-2">
+              <Store className="h-4 w-4 text-muted-foreground" />
+              <Select value={branchFilter} onValueChange={setBranchFilter}>
+                <SelectTrigger className="w-[200px] h-9">
+                  <SelectValue placeholder="All branches" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All branches</SelectItem>
+                  {branches.map((b) => (
+                    <SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button size="sm" className="h-9">
+                <Download className="h-3.5 w-3.5 mr-1" /> Export
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuLabel className="text-xs">
+                {filtered.length} receipt(s) • batch & expiry
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={handleExportCSV}>
+                <FileSpreadsheet className="h-3.5 w-3.5 mr-2" /> Excel / CSV (.csv)
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={handleExportPDF}>
+                <FileText className="h-3.5 w-3.5 mr-2" /> PDF (landscape A4)
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
+
 
       {/* Last invoice quick-action */}
       <Card className="border-none shadow-sm">
