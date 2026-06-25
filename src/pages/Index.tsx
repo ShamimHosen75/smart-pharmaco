@@ -31,15 +31,30 @@ import {
   getTopMedicines,
   formatTimeAgo,
 } from "@/stores/sales-store";
+import { useMedicineStore, getMedicineStatus } from "@/stores/medicine-store";
+import { useCustomerStore } from "@/stores/customer-store";
+import { useEmployeeStore } from "@/stores/employee-store";
 
 const Dashboard = () => {
   const sales = useSalesStore((s) => s.sales);
+  const medicines = useMedicineStore((s) => s.medicines);
+  const customers = useCustomerStore((s) => s.customers);
+  const employees = useEmployeeStore((s) => s.employees);
   const navigate = useNavigate();
 
   const todaySales = useMemo(() => getTodaySales(sales), [sales]);
   const monthSales = useMemo(() => getThisMonthSales(sales), [sales]);
   const weeklyChart = useMemo(() => getWeeklySalesChart(sales), [sales]);
   const topMeds = useMemo(() => getTopMedicines(sales), [sales]);
+
+  const lowOrOutCount = useMemo(
+    () => medicines.filter((m) => {
+      const st = getMedicineStatus(m);
+      return st === "Low Stock" || st === "Out of Stock";
+    }).length,
+    [medicines]
+  );
+  const activeStaff = employees.filter((e) => e.status === "active").length;
 
   const todayTotal = todaySales.reduce((s, r) => s + r.total, 0);
   const monthTotal = monthSales.reduce((s, r) => s + r.total, 0);
