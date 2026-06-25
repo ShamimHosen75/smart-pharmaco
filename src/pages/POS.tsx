@@ -146,7 +146,7 @@ const POS = () => {
     const invoiceNo = generateInvoiceNo();
     const now = new Date();
     const items = cart.map((c) => ({
-      id: c.id, name: c.name, qty: c.qty, price: c.price,
+      id: c.id, name: c.name, qty: c.qty, price: c.price, batch: c.batch, expiry: c.expiry,
     }));
     const invoice: InvoiceData = {
       invoiceNo,
@@ -156,9 +156,10 @@ const POS = () => {
       }),
       customerName,
       customerPhone,
-      items: items.map(({ name, qty, price }) => ({ name, qty, price })),
+      items: items.map(({ name, qty, price, batch, expiry }) => ({ name, qty, price, batch, expiry })),
       subtotal, discount: discountAmt, vat, total, paymentMethod,
     };
+
 
     addSale({
       id: crypto.randomUUID(),
