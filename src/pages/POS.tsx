@@ -18,7 +18,7 @@ import {
   Popover, PopoverContent, PopoverTrigger,
 } from "@/components/ui/popover";
 import { toast } from "@/hooks/use-toast";
-import { printInvoice, generateInvoiceNo, type InvoiceData } from "@/lib/invoice-printer";
+import { printInvoice, downloadInvoicePDF, generateInvoiceNo, type InvoiceData } from "@/lib/invoice-printer";
 import { useSalesStore } from "@/stores/sales-store";
 import { useMedicineStore, getMedicineStatus } from "@/stores/medicine-store";
 import { useBranchStore } from "@/stores/branch-store";
