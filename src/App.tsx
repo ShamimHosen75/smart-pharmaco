@@ -8,6 +8,7 @@ import Index from "./pages/Index";
 import Medicines from "./pages/Medicines";
 import POS from "./pages/POS";
 import Returns from "./pages/Returns";
+import Receipts from "./pages/Receipts";
 import Purchases from "./pages/Purchases";
 import Customers from "./pages/Customers";
 import Reports from "./pages/Reports";
@@ -33,6 +34,7 @@ const App = () => (
             <Route path="/medicines" element={<Medicines />} />
             <Route path="/pos" element={<POS />} />
             <Route path="/returns" element={<Returns />} />
+            <Route path="/receipts" element={<Receipts />} />
             <Route path="/purchases" element={<Purchases />} />
             <Route path="/customers" element={<Customers />} />
             <Route path="/reports" element={<Reports />} />
