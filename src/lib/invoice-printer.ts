@@ -35,11 +35,15 @@ function generateInvoiceNo() {
 
 function thermalHTML(data: InvoiceData): string {
   const rows = data.items
-    .map(
-      (i) =>
-        `<tr><td style="text-align:left;font-size:11px;padding:2px 0">${i.name}</td><td style="text-align:center;font-size:11px">${i.qty}</td><td style="text-align:right;font-size:11px">$${(i.price * i.qty).toFixed(2)}</td></tr>`
-    )
+    .map((i) => {
+      const meta =
+        i.batch || i.expiry
+          ? `<tr><td colspan="3" style="font-size:9px;color:#444;padding:0 0 2px 0">${i.batch ? `Batch: ${i.batch}` : ""}${i.batch && i.expiry ? " • " : ""}${i.expiry ? `Exp: ${i.expiry}` : ""}</td></tr>`
+          : "";
+      return `<tr><td style="text-align:left;font-size:11px;padding:2px 0">${i.name}</td><td style="text-align:center;font-size:11px">${i.qty}</td><td style="text-align:right;font-size:11px">$${(i.price * i.qty).toFixed(2)}</td></tr>${meta}`;
+    })
     .join("");
+
 
   return `<!DOCTYPE html><html><head><title>Receipt</title>
 <style>
