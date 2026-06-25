@@ -14,6 +14,8 @@ export interface Branch {
 
 interface BranchStore {
   branches: Branch[];
+  currentBranchId: string;
+  setCurrentBranch: (id: string) => void;
   addBranch: (b: Omit<Branch, "id" | "createdAt">) => void;
   updateBranch: (id: string, b: Partial<Branch>) => void;
   deleteBranch: (id: string) => void;
@@ -58,6 +60,10 @@ const initialBranches: Branch[] = [
 
 export const useBranchStore = create<BranchStore>((set) => ({
   branches: initialBranches,
+  currentBranchId: initialBranches[0].id,
+  setCurrentBranch: (id) => set({ currentBranchId: id }),
+
+
 
   addBranch: (b) =>
     set((s) => ({

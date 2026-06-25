@@ -1,113 +1,189 @@
-import { useState } from "react";
-import { Search, Plus, Minus, Trash2, CreditCard, Banknote, Smartphone, Printer, Receipt, FileText, Check } from "lucide-react";
+import { useMemo, useState } from "react";
+import {
+  Search, Plus, Minus, Trash2, CreditCard, Banknote, Smartphone,
+  Receipt, FileText, Check, Store, UserPlus, AlertCircle,
+} from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
+  Dialog, DialogContent, DialogHeader, DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from "@/components/ui/select";
+import {
+  Popover, PopoverContent, PopoverTrigger,
+} from "@/components/ui/popover";
+import { toast } from "@/hooks/use-toast";
 import { printInvoice, generateInvoiceNo, type InvoiceData } from "@/lib/invoice-printer";
 import { useSalesStore } from "@/stores/sales-store";
+import { useMedicineStore, getMedicineStatus } from "@/stores/medicine-store";
+import { useBranchStore } from "@/stores/branch-store";
+import { useCustomerStore } from "@/stores/customer-store";
 
 interface CartItem {
-  id: number;
+  id: string;
   name: string;
   price: number;
   qty: number;
+  maxStock: number;
 }
 
-const quickMeds = [
-  { id: 1, name: "Paracetamol 500mg", price: 2.5, stock: 450 },
-  { id: 2, name: "Amoxicillin 250mg", price: 5.75, stock: 280 },
-  { id: 3, name: "Omeprazole 20mg", price: 3.2, stock: 120 },
-  { id: 4, name: "Cetirizine 10mg", price: 1.8, stock: 620 },
-  { id: 5, name: "Losartan 50mg", price: 6.4, stock: 195 },
-  { id: 6, name: "Ibuprofen 400mg", price: 2.9, stock: 85 },
-  { id: 7, name: "Metformin 500mg", price: 4.1, stock: 310 },
-  { id: 8, name: "Atorvastatin 10mg", price: 7.5, stock: 340 },
-  { id: 9, name: "Diclofenac 50mg", price: 3.0, stock: 220 },
-  { id: 10, name: "Ranitidine 150mg", price: 2.2, stock: 180 },
-  { id: 11, name: "Azithromycin 500mg", price: 8.5, stock: 150 },
-  { id: 12, name: "Ciprofloxacin 500mg", price: 4.8, stock: 275 },
-];
-
 const POS = () => {
+  const medicines = useMedicineStore((s) => s.medicines);
+  const adjustStock = useMedicineStore((s) => s.adjustStock);
+  const addSale = useSalesStore((s) => s.addSale);
+  const branches = useBranchStore((s) => s.branches);
+  const currentBranchId = useBranchStore((s) => s.currentBranchId);
+  const setCurrentBranch = useBranchStore((s) => s.setCurrentBranch);
+  const customers = useCustomerStore((s) => s.customers);
+  const addLoyaltyPoints = useCustomerStore((s) => s.addLoyaltyPoints);
+
   const [cart, setCart] = useState<CartItem[]>([]);
   const [search, setSearch] = useState("");
   const [discount, setDiscount] = useState(0);
   const [paymentMethod, setPaymentMethod] = useState("cash");
+  const [customerId, setCustomerId] = useState<string | undefined>();
   const [customerName, setCustomerName] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
+  const [customerPickerOpen, setCustomerPickerOpen] = useState(false);
   const [showInvoiceDialog, setShowInvoiceDialog] = useState(false);
   const [lastInvoice, setLastInvoice] = useState<InvoiceData | null>(null);
 
-  const addToCart = (med: typeof quickMeds[0]) => {
+  const activeBranches = branches.filter((b) => b.status === "active");
+  const currentBranch =
+    branches.find((b) => b.id === currentBranchId) ?? activeBranches[0];
+
+  const filteredMeds = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    const list = medicines.filter((m) => {
+      const status = getMedicineStatus(m);
+      if (status === "Expired") return false;
+      if (!q) return true;
+      return (
+        m.name.toLowerCase().includes(q) ||
+        m.generic.toLowerCase().includes(q) ||
+        m.batch.toLowerCase().includes(q)
+      );
+    });
+    return list.slice(0, 60);
+  }, [medicines, search]);
+
+  const addToCart = (med: typeof medicines[number]) => {
+    if (med.stock === 0) {
+      toast({ title: "Out of stock", description: med.name, variant: "destructive" });
+      return;
+    }
     setCart((prev) => {
       const existing = prev.find((c) => c.id === med.id);
-      if (existing) return prev.map((c) => (c.id === med.id ? { ...c, qty: c.qty + 1 } : c));
-      return [...prev, { id: med.id, name: med.name, price: med.price, qty: 1 }];
+      if (existing) {
+        if (existing.qty + 1 > med.stock) {
+          toast({ title: "Stock limit", description: `Only ${med.stock} in stock`, variant: "destructive" });
+          return prev;
+        }
+        return prev.map((c) =>
+          c.id === med.id ? { ...c, qty: c.qty + 1 } : c
+        );
+      }
+      const price = med.discount
+        ? med.price * (1 - med.discount / 100)
+        : med.price;
+      return [
+        ...prev,
+        { id: med.id, name: med.name, price, qty: 1, maxStock: med.stock },
+      ];
     });
   };
 
-  const updateQty = (id: number, delta: number) => {
+  const updateQty = (id: string, delta: number) => {
     setCart((prev) =>
       prev
-        .map((c) => (c.id === id ? { ...c, qty: c.qty + delta } : c))
+        .map((c) => {
+          if (c.id !== id) return c;
+          const next = c.qty + delta;
+          if (next > c.maxStock) {
+            toast({ title: "Stock limit", description: `Only ${c.maxStock} in stock`, variant: "destructive" });
+            return c;
+          }
+          return { ...c, qty: next };
+        })
         .filter((c) => c.qty > 0)
     );
   };
 
-  const removeItem = (id: number) => setCart((prev) => prev.filter((c) => c.id !== id));
+  const removeItem = (id: string) =>
+    setCart((prev) => prev.filter((c) => c.id !== id));
 
   const subtotal = cart.reduce((s, c) => s + c.price * c.qty, 0);
   const discountAmt = subtotal * (discount / 100);
   const vat = (subtotal - discountAmt) * 0.05;
   const total = subtotal - discountAmt + vat;
 
-  const filteredMeds = quickMeds.filter((m) =>
-    m.name.toLowerCase().includes(search.toLowerCase())
-  );
+  const pickCustomer = (cId: string) => {
+    const c = customers.find((x) => x.id === cId);
+    if (!c) return;
+    setCustomerId(c.id);
+    setCustomerName(c.name);
+    setCustomerPhone(c.phone);
+    setCustomerPickerOpen(false);
+  };
 
-  const addSale = useSalesStore((s) => s.addSale);
+  const clearCustomer = () => {
+    setCustomerId(undefined);
+    setCustomerName("");
+    setCustomerPhone("");
+  };
 
   const completeSale = () => {
+    if (cart.length === 0) return;
     const invoiceNo = generateInvoiceNo();
     const now = new Date();
+    const items = cart.map((c) => ({
+      id: c.id, name: c.name, qty: c.qty, price: c.price,
+    }));
     const invoice: InvoiceData = {
       invoiceNo,
       date: now.toLocaleDateString("en-US", {
-        year: "numeric", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit",
+        year: "numeric", month: "short", day: "numeric",
+        hour: "2-digit", minute: "2-digit",
       }),
       customerName,
       customerPhone,
-      items: cart.map((c) => ({ name: c.name, qty: c.qty, price: c.price })),
-      subtotal,
-      discount: discountAmt,
-      vat,
-      total,
-      paymentMethod,
+      items: items.map(({ name, qty, price }) => ({ name, qty, price })),
+      subtotal, discount: discountAmt, vat, total, paymentMethod,
     };
-    // Record in store
+
     addSale({
       id: crypto.randomUUID(),
       invoiceNo,
       date: now,
+      branchId: currentBranch?.id,
+      customerId,
       customerName,
       customerPhone,
-      items: invoice.items,
+      items,
       subtotal,
       discount: discountAmt,
       vat,
       total,
       paymentMethod,
     });
+
+    // Deduct stock
+    for (const item of cart) adjustStock(item.id, -item.qty);
+
+    // Loyalty: 1 point per $10
+    if (customerId) addLoyaltyPoints(customerId, Math.floor(total / 10));
+
     setLastInvoice(invoice);
     setShowInvoiceDialog(true);
+    toast({
+      title: "Sale completed",
+      description: `${invoiceNo} • ${currentBranch?.name ?? "Branch"}`,
+    });
   };
 
   const handlePrint = (format: "thermal" | "a4") => {
@@ -117,17 +193,35 @@ const POS = () => {
   const handleDone = () => {
     setShowInvoiceDialog(false);
     setCart([]);
-    setCustomerName("");
-    setCustomerPhone("");
+    clearCustomer();
     setDiscount(0);
     setLastInvoice(null);
   };
 
   return (
     <div className="animate-fade-in h-[calc(100vh-7rem)]">
-      <div className="mb-4">
-        <h1 className="text-2xl font-heading font-bold">Point of Sale</h1>
-        <p className="text-sm text-muted-foreground">Quick sales terminal</p>
+      <div className="mb-4 flex items-center justify-between gap-3 flex-wrap">
+        <div>
+          <h1 className="text-2xl font-heading font-bold">Point of Sale</h1>
+          <p className="text-sm text-muted-foreground">
+            Quick sales terminal{currentBranch ? ` • ${currentBranch.name}` : ""}
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <Store className="h-4 w-4 text-muted-foreground" />
+          <Select value={currentBranchId} onValueChange={setCurrentBranch}>
+            <SelectTrigger className="w-[220px]">
+              <SelectValue placeholder="Select branch" />
+            </SelectTrigger>
+            <SelectContent>
+              {activeBranches.map((b) => (
+                <SelectItem key={b.id} value={b.id}>
+                  {b.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 h-[calc(100%-4rem)]">
@@ -136,26 +230,63 @@ const POS = () => {
           <div className="relative mb-3">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
-              placeholder="Scan barcode or search medicine..."
+              placeholder="Scan barcode, search by name, generic, or batch..."
               className="pl-10"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
+              autoFocus
             />
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 overflow-y-auto flex-1">
-            {filteredMeds.map((med) => (
-              <button
-                key={med.id}
-                onClick={() => addToCart(med)}
-                className="flex flex-col items-start rounded-xl border border-border bg-card p-3 text-left hover:border-primary/40 hover:shadow-sm transition-all"
-              >
-                <p className="text-sm font-medium leading-tight">{med.name}</p>
-                <div className="mt-auto pt-2 flex items-center justify-between w-full">
-                  <span className="text-sm font-heading font-bold text-primary">${med.price.toFixed(2)}</span>
-                  <Badge variant="secondary" className="text-[10px]">{med.stock}</Badge>
-                </div>
-              </button>
-            ))}
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 overflow-y-auto flex-1 pr-1">
+            {filteredMeds.length === 0 && (
+              <div className="col-span-full flex flex-col items-center justify-center h-40 text-sm text-muted-foreground gap-2">
+                <AlertCircle className="h-6 w-6" />
+                No medicines match "{search}"
+              </div>
+            )}
+            {filteredMeds.map((med) => {
+              const status = getMedicineStatus(med);
+              const low = status === "Low Stock" || status === "Expiring Soon";
+              const out = med.stock === 0;
+              const finalPrice = med.discount
+                ? med.price * (1 - med.discount / 100)
+                : med.price;
+              return (
+                <button
+                  key={med.id}
+                  onClick={() => addToCart(med)}
+                  disabled={out}
+                  className={`flex flex-col items-start rounded-xl border bg-card p-3 text-left transition-all ${
+                    out
+                      ? "opacity-50 cursor-not-allowed border-border"
+                      : "border-border hover:border-primary/40 hover:shadow-sm"
+                  }`}
+                >
+                  <p className="text-sm font-medium leading-tight line-clamp-2">{med.name}</p>
+                  <p className="text-[11px] text-muted-foreground mt-0.5 truncate w-full">
+                    {med.generic}
+                  </p>
+                  <div className="mt-auto pt-2 flex items-center justify-between w-full">
+                    <div className="flex items-baseline gap-1">
+                      <span className="text-sm font-heading font-bold text-primary">
+                        ${finalPrice.toFixed(2)}
+                      </span>
+                      {med.discount > 0 && (
+                        <span className="text-[10px] text-muted-foreground line-through">
+                          ${med.price.toFixed(2)}
+                        </span>
+                      )}
+                    </div>
+                    <Badge
+                      variant={low ? "destructive" : "secondary"}
+                      className="text-[10px]"
+                    >
+                      {out ? "Out" : med.stock}
+                    </Badge>
+                  </div>
+                </button>
+              );
+            })}
           </div>
         </div>
 
@@ -169,10 +300,50 @@ const POS = () => {
           </CardHeader>
           <CardContent className="flex-1 flex flex-col p-4 pt-0">
             {/* Customer */}
-            <div className="grid grid-cols-2 gap-2 mb-3">
-              <Input placeholder="Customer name" className="text-sm" value={customerName} onChange={(e) => setCustomerName(e.target.value)} />
-              <Input placeholder="Phone number" className="text-sm" value={customerPhone} onChange={(e) => setCustomerPhone(e.target.value)} />
+            <div className="grid grid-cols-[1fr_1fr_auto] gap-2 mb-3">
+              <Input
+                placeholder="Customer name"
+                className="text-sm"
+                value={customerName}
+                onChange={(e) => { setCustomerName(e.target.value); setCustomerId(undefined); }}
+              />
+              <Input
+                placeholder="Phone number"
+                className="text-sm"
+                value={customerPhone}
+                onChange={(e) => { setCustomerPhone(e.target.value); setCustomerId(undefined); }}
+              />
+              <Popover open={customerPickerOpen} onOpenChange={setCustomerPickerOpen}>
+                <PopoverTrigger asChild>
+                  <Button type="button" variant="outline" size="icon" title="Pick customer">
+                    <UserPlus className="h-4 w-4" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-72 p-2" align="end">
+                  <p className="text-xs font-medium text-muted-foreground px-2 py-1">
+                    Select existing customer
+                  </p>
+                  <div className="max-h-60 overflow-y-auto">
+                    {customers.filter((c) => c.status === "active").map((c) => (
+                      <button
+                        key={c.id}
+                        onClick={() => pickCustomer(c.id)}
+                        className="w-full rounded px-2 py-1.5 text-left text-sm hover:bg-muted"
+                      >
+                        <div className="font-medium">{c.name}</div>
+                        <div className="text-[11px] text-muted-foreground">{c.phone}</div>
+                      </button>
+                    ))}
+                  </div>
+                </PopoverContent>
+              </Popover>
             </div>
+            {customerId && (
+              <div className="mb-2 flex items-center justify-between rounded bg-primary/5 px-2 py-1 text-xs text-primary">
+                <span>Linked customer • loyalty active</span>
+                <button onClick={clearCustomer} className="hover:underline">clear</button>
+              </div>
+            )}
 
             {/* Cart items */}
             <div className="flex-1 overflow-y-auto space-y-2 min-h-0">
@@ -205,8 +376,10 @@ const POS = () => {
               <span className="text-sm text-muted-foreground">Discount %</span>
               <Input
                 type="number"
+                min={0}
+                max={100}
                 value={discount}
-                onChange={(e) => setDiscount(Number(e.target.value))}
+                onChange={(e) => setDiscount(Math.max(0, Math.min(100, Number(e.target.value) || 0)))}
                 className="w-20 text-sm text-right"
               />
             </div>
@@ -269,6 +442,10 @@ const POS = () => {
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Invoice</span>
                   <span className="font-mono font-medium">{lastInvoice.invoiceNo}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Branch</span>
+                  <span>{currentBranch?.name ?? "—"}</span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Customer</span>

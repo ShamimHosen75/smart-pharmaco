@@ -4,9 +4,11 @@ export interface SaleRecord {
   id: string;
   invoiceNo: string;
   date: Date;
+  branchId?: string;
+  customerId?: string;
   customerName: string;
   customerPhone: string;
-  items: { name: string; qty: number; price: number }[];
+  items: { id?: string; name: string; qty: number; price: number }[];
   subtotal: number;
   discount: number;
   vat: number;
