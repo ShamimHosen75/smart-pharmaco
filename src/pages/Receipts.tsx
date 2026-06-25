@@ -17,7 +17,7 @@ import {
 import { toast } from "@/hooks/use-toast";
 import { useSalesStore, type SaleRecord } from "@/stores/sales-store";
 import { useBranchStore } from "@/stores/branch-store";
-import { printInvoice, downloadInvoice, type InvoiceData } from "@/lib/invoice-printer";
+import { printInvoice, downloadInvoice, downloadInvoicePDF, type InvoiceData } from "@/lib/invoice-printer";
 
 function toInvoiceData(sale: SaleRecord): InvoiceData {
   return {
