@@ -77,6 +77,15 @@ const Receipts = () => {
     toast({ title: "Download started", description: `${sale.invoiceNo}-${format}.html` });
   };
 
+  const handleDownloadPDF = async (sale: SaleRecord, format: "thermal" | "a4") => {
+    toast({ title: "Preparing PDF...", description: `${sale.invoiceNo}-${format}.pdf` });
+    try {
+      await downloadInvoicePDF(format, toInvoiceData(sale));
+    } catch (e) {
+      toast({ title: "PDF failed", description: String(e), variant: "destructive" });
+    }
+  };
+
   return (
     <div className="animate-fade-in space-y-4">
       <div className="flex items-center justify-between flex-wrap gap-3">
