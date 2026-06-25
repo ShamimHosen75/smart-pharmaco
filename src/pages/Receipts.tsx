@@ -309,7 +309,7 @@ const Receipts = () => {
                         </TableCell>
                       </TableRow>
                     )}
-                  </>
+                  </Fragment>
                 );
               })}
             </TableBody>
