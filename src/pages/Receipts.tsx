@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
-import { Search, Receipt, FileText, Download, Printer, Store } from "lucide-react";
+import { Search, Receipt, FileText, Download, Printer, Store, ChevronDown, ChevronRight } from "lucide-react";
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
