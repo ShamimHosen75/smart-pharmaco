@@ -30,6 +30,7 @@ const navGroups = [
       { title: "Dashboard", icon: LayoutDashboard, path: "/" },
       { title: "POS Sales", icon: ShoppingCart, path: "/pos" },
       { title: "Returns", icon: RotateCcw, path: "/returns" },
+      { title: "Receipts", icon: Receipt, path: "/receipts" },
     ],
   },
   {
