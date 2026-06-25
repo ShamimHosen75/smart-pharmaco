@@ -28,7 +28,7 @@ function toInvoiceData(sale: SaleRecord): InvoiceData {
     }),
     customerName: sale.customerName,
     customerPhone: sale.customerPhone,
-    items: sale.items.map(({ name, qty, price }) => ({ name, qty, price })),
+    items: sale.items.map(({ name, qty, price, batch, expiry }) => ({ name, qty, price, batch, expiry })),
     subtotal: sale.subtotal,
     discount: sale.discount,
     vat: sale.vat,

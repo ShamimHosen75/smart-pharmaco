@@ -30,7 +30,10 @@ interface CartItem {
   price: number;
   qty: number;
   maxStock: number;
+  batch?: string;
+  expiry?: string;
 }
+
 
 const POS = () => {
   const medicines = useMedicineStore((s) => s.medicines);
@@ -93,8 +96,9 @@ const POS = () => {
         : med.price;
       return [
         ...prev,
-        { id: med.id, name: med.name, price, qty: 1, maxStock: med.stock },
+        { id: med.id, name: med.name, price, qty: 1, maxStock: med.stock, batch: med.batch, expiry: med.expiry },
       ];
+
     });
   };
 
@@ -142,7 +146,7 @@ const POS = () => {
     const invoiceNo = generateInvoiceNo();
     const now = new Date();
     const items = cart.map((c) => ({
-      id: c.id, name: c.name, qty: c.qty, price: c.price,
+      id: c.id, name: c.name, qty: c.qty, price: c.price, batch: c.batch, expiry: c.expiry,
     }));
     const invoice: InvoiceData = {
       invoiceNo,
@@ -152,9 +156,10 @@ const POS = () => {
       }),
       customerName,
       customerPhone,
-      items: items.map(({ name, qty, price }) => ({ name, qty, price })),
+      items: items.map(({ name, qty, price, batch, expiry }) => ({ name, qty, price, batch, expiry })),
       subtotal, discount: discountAmt, vat, total, paymentMethod,
     };
+
 
     addSale({
       id: crypto.randomUUID(),
