@@ -30,7 +30,10 @@ interface CartItem {
   price: number;
   qty: number;
   maxStock: number;
+  batch?: string;
+  expiry?: string;
 }
+
 
 const POS = () => {
   const medicines = useMedicineStore((s) => s.medicines);
