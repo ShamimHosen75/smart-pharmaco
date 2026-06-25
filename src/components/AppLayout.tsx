@@ -5,6 +5,7 @@ import {
   Pill,
   ShoppingCart,
   RotateCcw,
+  Receipt,
   Package,
   Users,
   BarChart3,
