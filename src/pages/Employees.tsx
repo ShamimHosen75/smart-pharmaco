@@ -336,7 +336,7 @@ const Employees = () => {
                               {(["present", "late", "absent", "leave"] as AttendanceStatus[]).map((s) => (
                                 <button
                                   key={s}
-                                  onClick={() => markAttendance(emp.id, s)}
+                                  onClick={() => markAttendance(emp.id, attendanceDateStr, s)}
                                   className={cn(
                                     "rounded px-2 py-1 text-[10px] font-medium border transition-colors",
                                     record?.status === s
@@ -387,7 +387,7 @@ const Employees = () => {
                 <Select value={formRole} onValueChange={(v) => setFormRole(v as Role)}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    {roles.map((r) => <SelectItem key={r} value={r}>{r}</SelectItem>)}
+                    {ROLES.map((r) => <SelectItem key={r} value={r}>{r}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>
@@ -398,7 +398,7 @@ const Employees = () => {
                 <Select value={formBranch} onValueChange={setFormBranch}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    {branches.map((b) => <SelectItem key={b} value={b}>{b}</SelectItem>)}
+                    {branchOptions.map((b) => <SelectItem key={b} value={b}>{b}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>
