@@ -96,8 +96,9 @@ const POS = () => {
         : med.price;
       return [
         ...prev,
-        { id: med.id, name: med.name, price, qty: 1, maxStock: med.stock },
+        { id: med.id, name: med.name, price, qty: 1, maxStock: med.stock, batch: med.batch, expiry: med.expiry },
       ];
+
     });
   };
 
