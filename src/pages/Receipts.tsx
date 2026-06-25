@@ -1,5 +1,6 @@
-import { useMemo, useState } from "react";
-import { Search, Receipt, FileText, Download, Printer, Store } from "lucide-react";
+import { Fragment, useMemo, useState } from "react";
+import { Search, Receipt, FileText, Download, Printer, Store, ChevronDown, ChevronRight } from "lucide-react";
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -44,6 +45,14 @@ const Receipts = () => {
 
   const [branchFilter, setBranchFilter] = useState<string>(currentBranchId || "all");
   const [search, setSearch] = useState("");
+  const [expanded, setExpanded] = useState<Set<string>>(new Set());
+  const toggleExpanded = (id: string) =>
+    setExpanded((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -184,6 +193,7 @@ const Receipts = () => {
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead className="w-8"></TableHead>
                 <TableHead>Invoice</TableHead>
                 <TableHead>Date</TableHead>
                 <TableHead>Branch</TableHead>
@@ -196,63 +206,112 @@ const Receipts = () => {
             <TableBody>
               {filtered.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={7} className="h-24 text-center text-sm text-muted-foreground">
+                  <TableCell colSpan={8} className="h-24 text-center text-sm text-muted-foreground">
                     No receipts match the current filters.
                   </TableCell>
                 </TableRow>
               )}
-              {filtered.slice(0, 200).map((s) => (
-                <TableRow key={s.id}>
-                  <TableCell className="font-mono text-xs">{s.invoiceNo}</TableCell>
-                  <TableCell className="text-xs text-muted-foreground">
-                    {s.date.toLocaleDateString()}{" "}
-                    {s.date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-                  </TableCell>
-                  <TableCell className="text-xs">{branchName(s.branchId)}</TableCell>
-                  <TableCell className="text-sm">
-                    <div className="truncate max-w-[160px]">{s.customerName || "Walk-in"}</div>
-                    {s.customerPhone && (
-                      <div className="text-[11px] text-muted-foreground">{s.customerPhone}</div>
+              {filtered.slice(0, 200).map((s) => {
+                const isOpen = expanded.has(s.id);
+                return (
+                  <Fragment key={s.id}>
+                    <TableRow key={s.id}>
+                      <TableCell className="pr-0">
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          className="h-7 w-7"
+                          onClick={() => toggleExpanded(s.id)}
+                          aria-label={isOpen ? "Hide items" : "Show items"}
+                        >
+                          {isOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                        </Button>
+                      </TableCell>
+                      <TableCell className="font-mono text-xs">{s.invoiceNo}</TableCell>
+                      <TableCell className="text-xs text-muted-foreground">
+                        {s.date.toLocaleDateString()}{" "}
+                        {s.date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                      </TableCell>
+                      <TableCell className="text-xs">{branchName(s.branchId)}</TableCell>
+                      <TableCell className="text-sm">
+                        <div className="truncate max-w-[160px]">{s.customerName || "Walk-in"}</div>
+                        {s.customerPhone && (
+                          <div className="text-[11px] text-muted-foreground">{s.customerPhone}</div>
+                        )}
+                      </TableCell>
+                      <TableCell className="text-center text-sm">{s.items.length}</TableCell>
+                      <TableCell className="text-right text-sm font-medium">
+                        ${s.total.toFixed(2)}
+                      </TableCell>
+                      <TableCell className="text-right pr-4">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button size="sm" variant="outline">Actions</Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end" className="w-48">
+                            <DropdownMenuLabel className="text-xs">Reprint</DropdownMenuLabel>
+                            <DropdownMenuItem onClick={() => handlePrint(s, "thermal")}>
+                              <Printer className="h-3.5 w-3.5 mr-2" /> Thermal (80mm)
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handlePrint(s, "a4")}>
+                              <FileText className="h-3.5 w-3.5 mr-2" /> A4 invoice
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuLabel className="text-xs">Download PDF</DropdownMenuLabel>
+                            <DropdownMenuItem onClick={() => handleDownloadPDF(s, "thermal")}>
+                              <Download className="h-3.5 w-3.5 mr-2" /> Thermal .pdf
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleDownloadPDF(s, "a4")}>
+                              <Download className="h-3.5 w-3.5 mr-2" /> A4 .pdf
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuLabel className="text-xs">Download HTML</DropdownMenuLabel>
+                            <DropdownMenuItem onClick={() => handleDownload(s, "thermal")}>
+                              <Download className="h-3.5 w-3.5 mr-2" /> Thermal .html
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleDownload(s, "a4")}>
+                              <Download className="h-3.5 w-3.5 mr-2" /> A4 .html
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
+                    {isOpen && (
+                      <TableRow key={s.id + "-items"} className="bg-muted/20 hover:bg-muted/20">
+                        <TableCell></TableCell>
+                        <TableCell colSpan={7} className="py-3">
+                          <div className="rounded-md border bg-background overflow-hidden">
+                            <table className="w-full text-xs">
+                              <thead className="bg-muted/40">
+                                <tr className="text-left text-[10px] uppercase tracking-wide text-muted-foreground">
+                                  <th className="px-3 py-2">Medicine</th>
+                                  <th className="px-3 py-2">Batch</th>
+                                  <th className="px-3 py-2">Expiry</th>
+                                  <th className="px-3 py-2 text-center">Qty</th>
+                                  <th className="px-3 py-2 text-right">Unit</th>
+                                  <th className="px-3 py-2 text-right">Amount</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {s.items.map((i, idx) => (
+                                  <tr key={idx} className="border-t">
+                                    <td className="px-3 py-1.5">{i.name}</td>
+                                    <td className="px-3 py-1.5 font-mono text-[11px]">{i.batch || "—"}</td>
+                                    <td className="px-3 py-1.5 text-[11px]">{i.expiry || "—"}</td>
+                                    <td className="px-3 py-1.5 text-center">{i.qty}</td>
+                                    <td className="px-3 py-1.5 text-right">${i.price.toFixed(2)}</td>
+                                    <td className="px-3 py-1.5 text-right">${(i.price * i.qty).toFixed(2)}</td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                        </TableCell>
+                      </TableRow>
                     )}
-                  </TableCell>
-                  <TableCell className="text-center text-sm">{s.items.length}</TableCell>
-                  <TableCell className="text-right text-sm font-medium">
-                    ${s.total.toFixed(2)}
-                  </TableCell>
-                  <TableCell className="text-right pr-4">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button size="sm" variant="outline">Actions</Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="w-48">
-                        <DropdownMenuLabel className="text-xs">Reprint</DropdownMenuLabel>
-                        <DropdownMenuItem onClick={() => handlePrint(s, "thermal")}>
-                          <Printer className="h-3.5 w-3.5 mr-2" /> Thermal (80mm)
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handlePrint(s, "a4")}>
-                          <FileText className="h-3.5 w-3.5 mr-2" /> A4 invoice
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuLabel className="text-xs">Download PDF</DropdownMenuLabel>
-                        <DropdownMenuItem onClick={() => handleDownloadPDF(s, "thermal")}>
-                          <Download className="h-3.5 w-3.5 mr-2" /> Thermal .pdf
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleDownloadPDF(s, "a4")}>
-                          <Download className="h-3.5 w-3.5 mr-2" /> A4 .pdf
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuLabel className="text-xs">Download HTML</DropdownMenuLabel>
-                        <DropdownMenuItem onClick={() => handleDownload(s, "thermal")}>
-                          <Download className="h-3.5 w-3.5 mr-2" /> Thermal .html
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleDownload(s, "a4")}>
-                          <Download className="h-3.5 w-3.5 mr-2" /> A4 .html
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </TableCell>
-                </TableRow>
-              ))}
+                  </Fragment>
+                );
+              })}
             </TableBody>
           </Table>
         </CardContent>
@@ -260,5 +319,6 @@ const Receipts = () => {
     </div>
   );
 };
+
 
 export default Receipts;
