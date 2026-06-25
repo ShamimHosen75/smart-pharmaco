@@ -224,7 +224,7 @@ const Receipts = () => {
                       <DropdownMenuTrigger asChild>
                         <Button size="sm" variant="outline">Actions</Button>
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="w-44">
+                      <DropdownMenuContent align="end" className="w-48">
                         <DropdownMenuLabel className="text-xs">Reprint</DropdownMenuLabel>
                         <DropdownMenuItem onClick={() => handlePrint(s, "thermal")}>
                           <Printer className="h-3.5 w-3.5 mr-2" /> Thermal (80mm)
@@ -233,7 +233,15 @@ const Receipts = () => {
                           <FileText className="h-3.5 w-3.5 mr-2" /> A4 invoice
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
-                        <DropdownMenuLabel className="text-xs">Download</DropdownMenuLabel>
+                        <DropdownMenuLabel className="text-xs">Download PDF</DropdownMenuLabel>
+                        <DropdownMenuItem onClick={() => handleDownloadPDF(s, "thermal")}>
+                          <Download className="h-3.5 w-3.5 mr-2" /> Thermal .pdf
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleDownloadPDF(s, "a4")}>
+                          <Download className="h-3.5 w-3.5 mr-2" /> A4 .pdf
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuLabel className="text-xs">Download HTML</DropdownMenuLabel>
                         <DropdownMenuItem onClick={() => handleDownload(s, "thermal")}>
                           <Download className="h-3.5 w-3.5 mr-2" /> Thermal .html
                         </DropdownMenuItem>
