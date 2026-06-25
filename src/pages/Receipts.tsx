@@ -45,6 +45,14 @@ const Receipts = () => {
 
   const [branchFilter, setBranchFilter] = useState<string>(currentBranchId || "all");
   const [search, setSearch] = useState("");
+  const [expanded, setExpanded] = useState<Set<string>>(new Set());
+  const toggleExpanded = (id: string) =>
+    setExpanded((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
