@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import {
   Search, Plus, Minus, Trash2, CreditCard, Banknote, Smartphone,
-  Receipt, FileText, Check, Store, UserPlus, AlertCircle,
+  Receipt, FileText, Check, Store, UserPlus, AlertCircle, Download,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
