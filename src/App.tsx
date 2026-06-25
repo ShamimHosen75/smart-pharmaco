@@ -8,6 +8,7 @@ import Index from "./pages/Index";
 import Medicines from "./pages/Medicines";
 import POS from "./pages/POS";
 import Returns from "./pages/Returns";
+import Receipts from "./pages/Receipts";
 import Purchases from "./pages/Purchases";
 import Customers from "./pages/Customers";
 import Reports from "./pages/Reports";
