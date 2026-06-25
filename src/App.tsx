@@ -19,8 +19,14 @@ import Accounting from "./pages/Accounting";
 import Employees from "./pages/Employees";
 import Branches from "./pages/Branches";
 import NotFound from "./pages/NotFound";
+import { useThemeSync } from "./hooks/use-theme-sync";
 
 const queryClient = new QueryClient();
+
+const ThemedApp = ({ children }: { children: React.ReactNode }) => {
+  useThemeSync();
+  return <>{children}</>;
+};
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -28,7 +34,8 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <AppLayout>
+        <ThemedApp>
+          <AppLayout>
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/medicines" element={<Medicines />} />
