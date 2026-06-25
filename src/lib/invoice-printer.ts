@@ -216,7 +216,7 @@ export async function downloadInvoicePDF(
         };
 
   try {
-    await html2pdf().set(opts).from(container).save();
+    await (html2pdf as unknown as () => { set: (o: unknown) => { from: (el: HTMLElement) => { save: () => Promise<void> } } })().set(opts).from(container).save();
   } finally {
     document.body.removeChild(container);
   }
