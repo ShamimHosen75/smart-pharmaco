@@ -1,15 +1,24 @@
+interface InvoiceItem {
+  name: string;
+  qty: number;
+  price: number;
+  batch?: string;
+  expiry?: string;
+}
+
 interface InvoiceData {
   invoiceNo: string;
   date: string;
   customerName: string;
   customerPhone: string;
-  items: { name: string; qty: number; price: number }[];
+  items: InvoiceItem[];
   subtotal: number;
   discount: number;
   vat: number;
   total: number;
   paymentMethod: string;
 }
+
 
 const pharmacyInfo = {
   name: "MediCore Pharmacy",
