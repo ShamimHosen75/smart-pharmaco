@@ -197,7 +197,7 @@ export async function downloadInvoicePDF(
   }
   document.body.appendChild(container);
 
-  const opts: Parameters<ReturnType<typeof html2pdf>["set"]>[0] =
+  const opts: Record<string, unknown> =
     format === "thermal"
       ? {
           margin: 4,
