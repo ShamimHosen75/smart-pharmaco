@@ -179,7 +179,6 @@ export async function downloadInvoicePDF(
   format: "thermal" | "a4",
   data: InvoiceData
 ) {
-  // @ts-expect-error - html2pdf.js has no bundled types
   const { default: html2pdf } = await import("html2pdf.js");
   const html = format === "thermal" ? thermalHTML(data) : a4HTML(data);
 
