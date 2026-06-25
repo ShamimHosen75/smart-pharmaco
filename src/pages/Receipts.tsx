@@ -1,10 +1,11 @@
 import { Fragment, useMemo, useState } from "react";
-import { Search, Receipt, FileText, Download, Printer, Store, ChevronDown, ChevronRight } from "lucide-react";
+import { Search, Receipt, FileText, Download, Printer, Store, ChevronDown, ChevronRight, FileSpreadsheet, Calendar } from "lucide-react";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Label } from "@/components/ui/label";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
@@ -19,6 +20,7 @@ import { toast } from "@/hooks/use-toast";
 import { useSalesStore, type SaleRecord } from "@/stores/sales-store";
 import { useBranchStore } from "@/stores/branch-store";
 import { printInvoice, downloadInvoice, downloadInvoicePDF, type InvoiceData } from "@/lib/invoice-printer";
+import { exportSalesCSV, exportSalesPDF } from "@/lib/report-export";
 
 function toInvoiceData(sale: SaleRecord): InvoiceData {
   return {
