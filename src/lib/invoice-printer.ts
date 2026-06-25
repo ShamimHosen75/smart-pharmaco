@@ -143,7 +143,7 @@ thead th:last-child{border-radius:0 6px 0 0}
   </div>
 </div>
 <table>
-<thead><tr><th style="text-align:left">#</th><th style="text-align:left">Medicine</th><th style="text-align:center">Qty</th><th style="text-align:right">Unit Price</th><th style="text-align:right">Amount</th></tr></thead>
+<thead><tr><th style="text-align:left">#</th><th style="text-align:left">Medicine</th><th style="text-align:left">Batch</th><th style="text-align:left">Expiry</th><th style="text-align:center">Qty</th><th style="text-align:right">Unit Price</th><th style="text-align:right">Amount</th></tr></thead>
 <tbody>${rows}</tbody>
 </table>
 <div class="summary"><table>
