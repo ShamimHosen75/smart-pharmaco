@@ -134,6 +134,9 @@ const Employees = () => {
     toast({ title: editingEmployee ? "Employee updated" : "Employee added" });
   };
 
+  const attendanceDateStr = format(attendanceDate, "yyyy-MM-dd");
+  const dayAttendance = attendance.filter((a) => a.date === attendanceDateStr);
+
   const filtered = employees.filter(
     (e) => e.name.toLowerCase().includes(search.toLowerCase()) || e.role.toLowerCase().includes(search.toLowerCase())
   );
