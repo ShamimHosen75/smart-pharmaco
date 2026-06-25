@@ -90,9 +90,10 @@ function a4HTML(data: InvoiceData): string {
   const rows = data.items
     .map(
       (i, idx) =>
-        `<tr style="border-bottom:1px solid #eee"><td style="padding:8px;font-size:13px">${idx + 1}</td><td style="padding:8px;font-size:13px">${i.name}</td><td style="padding:8px;text-align:center;font-size:13px">${i.qty}</td><td style="padding:8px;text-align:right;font-size:13px">$${i.price.toFixed(2)}</td><td style="padding:8px;text-align:right;font-size:13px">$${(i.price * i.qty).toFixed(2)}</td></tr>`
+        `<tr style="border-bottom:1px solid #eee"><td style="padding:8px;font-size:13px">${idx + 1}</td><td style="padding:8px;font-size:13px">${i.name}</td><td style="padding:8px;font-size:12px;color:#555">${i.batch || "—"}</td><td style="padding:8px;font-size:12px;color:#555">${i.expiry || "—"}</td><td style="padding:8px;text-align:center;font-size:13px">${i.qty}</td><td style="padding:8px;text-align:right;font-size:13px">$${i.price.toFixed(2)}</td><td style="padding:8px;text-align:right;font-size:13px">$${(i.price * i.qty).toFixed(2)}</td></tr>`
     )
     .join("");
+
 
   return `<!DOCTYPE html><html><head><title>Invoice ${data.invoiceNo}</title>
 <style>
