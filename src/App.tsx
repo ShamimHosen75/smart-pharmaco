@@ -53,7 +53,8 @@ const App = () => (
             <Route path="/branches" element={<Branches />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
-        </AppLayout>
+          </AppLayout>
+        </ThemedApp>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
