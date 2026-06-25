@@ -175,5 +175,52 @@ export function downloadInvoice(
   URL.revokeObjectURL(url);
 }
 
+export async function downloadInvoicePDF(
+  format: "thermal" | "a4",
+  data: InvoiceData
+) {
+  const { default: html2pdf } = await import("html2pdf.js");
+  const html = format === "thermal" ? thermalHTML(data) : a4HTML(data);
+
+  // Render HTML off-screen so html2canvas can rasterize it.
+  const container = document.createElement("div");
+  container.style.position = "fixed";
+  container.style.left = "-10000px";
+  container.style.top = "0";
+  container.innerHTML = html;
+  // Strip outer html/body wrappers — we only want the body content for rendering.
+  const bodyMatch = html.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
+  const styleMatch = html.match(/<style[^>]*>([\s\S]*?)<\/style>/i);
+  if (bodyMatch) {
+    container.innerHTML =
+      (styleMatch ? `<style>${styleMatch[1]}</style>` : "") + bodyMatch[1];
+  }
+  document.body.appendChild(container);
+
+  const opts: Record<string, unknown> =
+    format === "thermal"
+      ? {
+          margin: 4,
+          filename: `${data.invoiceNo}-thermal.pdf`,
+          image: { type: "jpeg", quality: 0.98 },
+          html2canvas: { scale: 2, useCORS: true, backgroundColor: "#fff" },
+          jsPDF: { unit: "mm", format: [80, 297], orientation: "portrait" },
+        }
+      : {
+          margin: [10, 10, 10, 10],
+          filename: `${data.invoiceNo}-a4.pdf`,
+          image: { type: "jpeg", quality: 0.98 },
+          html2canvas: { scale: 2, useCORS: true, backgroundColor: "#fff" },
+          jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
+          pagebreak: { mode: ["css", "legacy"] },
+        };
+
+  try {
+    await (html2pdf as unknown as () => { set: (o: unknown) => { from: (el: HTMLElement) => { save: () => Promise<void> } } })().set(opts).from(container).save();
+  } finally {
+    document.body.removeChild(container);
+  }
+}
+
 export { generateInvoiceNo };
 export type { InvoiceData };

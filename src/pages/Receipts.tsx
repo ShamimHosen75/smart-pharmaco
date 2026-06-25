@@ -17,7 +17,7 @@ import {
 import { toast } from "@/hooks/use-toast";
 import { useSalesStore, type SaleRecord } from "@/stores/sales-store";
 import { useBranchStore } from "@/stores/branch-store";
-import { printInvoice, downloadInvoice, type InvoiceData } from "@/lib/invoice-printer";
+import { printInvoice, downloadInvoice, downloadInvoicePDF, type InvoiceData } from "@/lib/invoice-printer";
 
 function toInvoiceData(sale: SaleRecord): InvoiceData {
   return {
@@ -75,6 +75,15 @@ const Receipts = () => {
   const handleDownload = (sale: SaleRecord, format: "thermal" | "a4") => {
     downloadInvoice(format, toInvoiceData(sale));
     toast({ title: "Download started", description: `${sale.invoiceNo}-${format}.html` });
+  };
+
+  const handleDownloadPDF = async (sale: SaleRecord, format: "thermal" | "a4") => {
+    toast({ title: "Preparing PDF...", description: `${sale.invoiceNo}-${format}.pdf` });
+    try {
+      await downloadInvoicePDF(format, toInvoiceData(sale));
+    } catch (e) {
+      toast({ title: "PDF failed", description: String(e), variant: "destructive" });
+    }
   };
 
   return (
@@ -141,8 +150,11 @@ const Receipts = () => {
                 <Button size="sm" variant="outline" onClick={() => handlePrint(last, "a4")}>
                   <FileText className="h-3.5 w-3.5 mr-1" /> A4
                 </Button>
-                <Button size="sm" onClick={() => handleDownload(last, "a4")}>
-                  <Download className="h-3.5 w-3.5 mr-1" /> Download
+                <Button size="sm" variant="outline" onClick={() => handleDownload(last, "a4")}>
+                  <Download className="h-3.5 w-3.5 mr-1" /> HTML
+                </Button>
+                <Button size="sm" onClick={() => handleDownloadPDF(last, "a4")}>
+                  <Download className="h-3.5 w-3.5 mr-1" /> PDF
                 </Button>
               </div>
             </div>
@@ -212,7 +224,7 @@ const Receipts = () => {
                       <DropdownMenuTrigger asChild>
                         <Button size="sm" variant="outline">Actions</Button>
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="w-44">
+                      <DropdownMenuContent align="end" className="w-48">
                         <DropdownMenuLabel className="text-xs">Reprint</DropdownMenuLabel>
                         <DropdownMenuItem onClick={() => handlePrint(s, "thermal")}>
                           <Printer className="h-3.5 w-3.5 mr-2" /> Thermal (80mm)
@@ -221,7 +233,15 @@ const Receipts = () => {
                           <FileText className="h-3.5 w-3.5 mr-2" /> A4 invoice
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
-                        <DropdownMenuLabel className="text-xs">Download</DropdownMenuLabel>
+                        <DropdownMenuLabel className="text-xs">Download PDF</DropdownMenuLabel>
+                        <DropdownMenuItem onClick={() => handleDownloadPDF(s, "thermal")}>
+                          <Download className="h-3.5 w-3.5 mr-2" /> Thermal .pdf
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleDownloadPDF(s, "a4")}>
+                          <Download className="h-3.5 w-3.5 mr-2" /> A4 .pdf
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuLabel className="text-xs">Download HTML</DropdownMenuLabel>
                         <DropdownMenuItem onClick={() => handleDownload(s, "thermal")}>
                           <Download className="h-3.5 w-3.5 mr-2" /> Thermal .html
                         </DropdownMenuItem>

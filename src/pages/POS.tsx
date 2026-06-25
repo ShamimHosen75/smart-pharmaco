@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import {
   Search, Plus, Minus, Trash2, CreditCard, Banknote, Smartphone,
-  Receipt, FileText, Check, Store, UserPlus, AlertCircle,
+  Receipt, FileText, Check, Store, UserPlus, AlertCircle, Download,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -18,7 +18,7 @@ import {
   Popover, PopoverContent, PopoverTrigger,
 } from "@/components/ui/popover";
 import { toast } from "@/hooks/use-toast";
-import { printInvoice, generateInvoiceNo, type InvoiceData } from "@/lib/invoice-printer";
+import { printInvoice, downloadInvoicePDF, generateInvoiceNo, type InvoiceData } from "@/lib/invoice-printer";
 import { useSalesStore } from "@/stores/sales-store";
 import { useMedicineStore, getMedicineStatus } from "@/stores/medicine-store";
 import { useBranchStore } from "@/stores/branch-store";
@@ -188,6 +188,16 @@ const POS = () => {
 
   const handlePrint = (format: "thermal" | "a4") => {
     if (lastInvoice) printInvoice(format, lastInvoice);
+  };
+
+  const handleDownloadPDF = async (format: "thermal" | "a4") => {
+    if (!lastInvoice) return;
+    toast({ title: "Preparing PDF...", description: `${lastInvoice.invoiceNo}-${format}.pdf` });
+    try {
+      await downloadInvoicePDF(format, lastInvoice);
+    } catch (e) {
+      toast({ title: "PDF failed", description: String(e), variant: "destructive" });
+    }
   };
 
   const handleDone = () => {
@@ -462,7 +472,7 @@ const POS = () => {
                 </div>
               </div>
 
-              <p className="text-sm text-muted-foreground text-center">Choose print format</p>
+              <p className="text-sm text-muted-foreground text-center">Print or download as PDF</p>
 
               <div className="grid grid-cols-2 gap-3">
                 <button
@@ -481,6 +491,15 @@ const POS = () => {
                   <span className="text-sm font-heading font-semibold">A4</span>
                   <span className="text-[11px] text-muted-foreground">Full Invoice</span>
                 </button>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <Button variant="outline" size="sm" onClick={() => handleDownloadPDF("thermal")}>
+                  <Download className="h-3.5 w-3.5 mr-1" /> PDF Thermal
+                </Button>
+                <Button variant="outline" size="sm" onClick={() => handleDownloadPDF("a4")}>
+                  <Download className="h-3.5 w-3.5 mr-1" /> PDF A4
+                </Button>
               </div>
 
               <Button variant="outline" className="w-full" onClick={handleDone}>
