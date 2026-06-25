@@ -40,67 +40,14 @@ import {
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
-
-type Role = "Super Admin" | "Branch Admin" | "Pharmacist" | "Sales Staff" | "Accountant";
-type AttendanceStatus = "present" | "absent" | "late" | "leave";
-
-interface Employee {
-  id: string;
-  name: string;
-  email: string;
-  phone: string;
-  role: Role;
-  branch: string;
-  salary: number;
-  joinDate: string;
-  status: "active" | "inactive";
-}
-
-interface AttendanceRecord {
-  employeeId: string;
-  date: string;
-  status: AttendanceStatus;
-  checkIn?: string;
-  checkOut?: string;
-}
-
-const roles: Role[] = ["Super Admin", "Branch Admin", "Pharmacist", "Sales Staff", "Accountant"];
-const branches = ["Main Branch", "North Branch", "South Branch"];
-
-const initialEmployees: Employee[] = [
-  { id: "1", name: "Dr. Ahmed Khan", email: "ahmed@medicore.com", phone: "+1 555 100 0001", role: "Super Admin", branch: "Main Branch", salary: 8500, joinDate: "2023-01-15", status: "active" },
-  { id: "2", name: "Sara Ali", email: "sara@medicore.com", phone: "+1 555 100 0002", role: "Pharmacist", branch: "Main Branch", salary: 5200, joinDate: "2023-03-20", status: "active" },
-  { id: "3", name: "Omar Hassan", email: "omar@medicore.com", phone: "+1 555 100 0003", role: "Sales Staff", branch: "Main Branch", salary: 3200, joinDate: "2023-06-10", status: "active" },
-  { id: "4", name: "Fatima Noor", email: "fatima@medicore.com", phone: "+1 555 100 0004", role: "Branch Admin", branch: "North Branch", salary: 6000, joinDate: "2023-08-01", status: "active" },
-  { id: "5", name: "Yusuf Iqbal", email: "yusuf@medicore.com", phone: "+1 555 100 0005", role: "Pharmacist", branch: "North Branch", salary: 5000, joinDate: "2024-01-12", status: "active" },
-  { id: "6", name: "Lina Saeed", email: "lina@medicore.com", phone: "+1 555 100 0006", role: "Accountant", branch: "Main Branch", salary: 4500, joinDate: "2024-02-20", status: "active" },
-  { id: "7", name: "Tariq Mahmoud", email: "tariq@medicore.com", phone: "+1 555 100 0007", role: "Sales Staff", branch: "South Branch", salary: 3000, joinDate: "2024-05-15", status: "inactive" },
-];
-
-// Generate seed attendance for last 7 days
-function generateSeedAttendance(employees: Employee[]): AttendanceRecord[] {
-  const records: AttendanceRecord[] = [];
-  const now = new Date();
-  const statuses: AttendanceStatus[] = ["present", "present", "present", "present", "late", "absent", "leave"];
-  for (let dayOffset = 6; dayOffset >= 0; dayOffset--) {
-    const d = new Date(now);
-    d.setDate(d.getDate() - dayOffset);
-    if (d.getDay() === 0) continue; // skip Sunday
-    const dateStr = format(d, "yyyy-MM-dd");
-    for (const emp of employees) {
-      if (emp.status === "inactive") continue;
-      const status = statuses[Math.floor(Math.random() * statuses.length)];
-      records.push({
-        employeeId: emp.id,
-        date: dateStr,
-        status,
-        checkIn: status === "present" ? "09:00" : status === "late" ? "09:45" : undefined,
-        checkOut: status === "present" || status === "late" ? "18:00" : undefined,
-      });
-    }
-  }
-  return records;
-}
+import {
+  useEmployeeStore,
+  ROLES,
+  type Role,
+  type Employee,
+  type AttendanceStatus,
+} from "@/stores/employee-store";
+import { useBranchStore } from "@/stores/branch-store";
 
 const roleBadgeVariant = (role: Role) => {
   switch (role) {
@@ -130,8 +77,18 @@ const attendanceBg = (status: AttendanceStatus) => {
 };
 
 const Employees = () => {
-  const [employees, setEmployees] = useState<Employee[]>(initialEmployees);
-  const [attendance, setAttendance] = useState<AttendanceRecord[]>(() => generateSeedAttendance(initialEmployees));
+  const employees = useEmployeeStore((s) => s.employees);
+  const attendance = useEmployeeStore((s) => s.attendance);
+  const addEmployee = useEmployeeStore((s) => s.addEmployee);
+  const updateEmployee = useEmployeeStore((s) => s.updateEmployee);
+  const deleteEmployee = useEmployeeStore((s) => s.deleteEmployee);
+  const toggleStatus = useEmployeeStore((s) => s.toggleStatus);
+  const markAttendance = useEmployeeStore((s) => s.markAttendance);
+
+  const branchList = useBranchStore((s) => s.branches);
+  const branchOptions = branchList.filter((b) => b.status === "active").map((b) => b.name);
+  const defaultBranch = branchOptions[0] ?? "Main Branch";
+
   const [search, setSearch] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null);
@@ -142,12 +99,12 @@ const Employees = () => {
   const [formEmail, setFormEmail] = useState("");
   const [formPhone, setFormPhone] = useState("");
   const [formRole, setFormRole] = useState<Role>("Sales Staff");
-  const [formBranch, setFormBranch] = useState("Main Branch");
+  const [formBranch, setFormBranch] = useState(defaultBranch);
   const [formSalary, setFormSalary] = useState("");
 
   const resetForm = () => {
     setFormName(""); setFormEmail(""); setFormPhone("");
-    setFormRole("Sales Staff"); setFormBranch("Main Branch"); setFormSalary("");
+    setFormRole("Sales Staff"); setFormBranch(defaultBranch); setFormSalary("");
     setEditingEmployee(null);
   };
 
@@ -162,59 +119,23 @@ const Employees = () => {
   const saveEmployee = () => {
     if (!formName.trim() || !formEmail.trim()) return;
     if (editingEmployee) {
-      setEmployees((prev) =>
-        prev.map((e) =>
-          e.id === editingEmployee.id
-            ? { ...e, name: formName, email: formEmail, phone: formPhone, role: formRole, branch: formBranch, salary: Number(formSalary) }
-            : e
-        )
-      );
-    } else {
-      const newEmp: Employee = {
-        id: crypto.randomUUID(),
+      updateEmployee(editingEmployee.id, {
         name: formName, email: formEmail, phone: formPhone,
-        role: formRole, branch: formBranch, salary: Number(formSalary),
-        joinDate: format(new Date(), "yyyy-MM-dd"), status: "active",
-      };
-      setEmployees((prev) => [...prev, newEmp]);
+        role: formRole, branch: formBranch, salary: Number(formSalary) || 0,
+      });
+    } else {
+      addEmployee({
+        name: formName, email: formEmail, phone: formPhone,
+        role: formRole, branch: formBranch, salary: Number(formSalary) || 0,
+      });
     }
     setDialogOpen(false);
     resetForm();
     toast({ title: editingEmployee ? "Employee updated" : "Employee added" });
   };
 
-  const toggleStatus = (id: string) => {
-    setEmployees((prev) =>
-      prev.map((e) => (e.id === id ? { ...e, status: e.status === "active" ? "inactive" : "active" } : e))
-    );
-  };
-
-  const deleteEmployee = (id: string) => {
-    setEmployees((prev) => prev.filter((e) => e.id !== id));
-    setAttendance((prev) => prev.filter((a) => a.employeeId !== id));
-  };
-
-  // Attendance
   const attendanceDateStr = format(attendanceDate, "yyyy-MM-dd");
   const dayAttendance = attendance.filter((a) => a.date === attendanceDateStr);
-
-  const markAttendance = (employeeId: string, status: AttendanceStatus) => {
-    setAttendance((prev) => {
-      const existing = prev.findIndex((a) => a.employeeId === employeeId && a.date === attendanceDateStr);
-      const now = format(new Date(), "HH:mm");
-      const record: AttendanceRecord = {
-        employeeId, date: attendanceDateStr, status,
-        checkIn: status === "present" ? "09:00" : status === "late" ? now : undefined,
-        checkOut: undefined,
-      };
-      if (existing >= 0) {
-        const updated = [...prev];
-        updated[existing] = record;
-        return updated;
-      }
-      return [...prev, record];
-    });
-  };
 
   const filtered = employees.filter(
     (e) => e.name.toLowerCase().includes(search.toLowerCase()) || e.role.toLowerCase().includes(search.toLowerCase())
@@ -415,7 +336,7 @@ const Employees = () => {
                               {(["present", "late", "absent", "leave"] as AttendanceStatus[]).map((s) => (
                                 <button
                                   key={s}
-                                  onClick={() => markAttendance(emp.id, s)}
+                                  onClick={() => markAttendance(emp.id, attendanceDateStr, s)}
                                   className={cn(
                                     "rounded px-2 py-1 text-[10px] font-medium border transition-colors",
                                     record?.status === s
@@ -466,7 +387,7 @@ const Employees = () => {
                 <Select value={formRole} onValueChange={(v) => setFormRole(v as Role)}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    {roles.map((r) => <SelectItem key={r} value={r}>{r}</SelectItem>)}
+                    {ROLES.map((r) => <SelectItem key={r} value={r}>{r}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>
@@ -477,7 +398,7 @@ const Employees = () => {
                 <Select value={formBranch} onValueChange={setFormBranch}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    {branches.map((b) => <SelectItem key={b} value={b}>{b}</SelectItem>)}
+                    {branchOptions.map((b) => <SelectItem key={b} value={b}>{b}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>

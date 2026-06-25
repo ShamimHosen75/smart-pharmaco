@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useSettingsStore } from "@/stores/settings-store";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -74,52 +74,20 @@ const ColorField = ({
 );
 
 const SystemSettings = () => {
-  // Store Info
-  const [storeInfo, setStoreInfo] = useState({
-    name: "MediCore Pharmacy",
-    phone: "+1 234 567 890",
-    address: "123 Health Street, Medical District",
-    email: "info@medicore.com",
-    license: "PH-2024-12345",
-  });
+  const storeInfo = useSettingsStore((s) => s.storeInfo);
+  const setStoreInfoStore = useSettingsStore((s) => s.setStoreInfo);
+  const globalSettings = useSettingsStore((s) => s.global);
+  const setGlobalStore = useSettingsStore((s) => s.setGlobal);
+  const theme = useSettingsStore((s) => s.theme);
+  const setThemeStore = useSettingsStore((s) => s.setTheme);
+  const marketing = useSettingsStore((s) => s.marketing);
+  const setMarketingStore = useSettingsStore((s) => s.setMarketing);
 
-  // Global
-  const [globalSettings, setGlobalSettings] = useState({
-    currency: "USD",
-    vat: "5",
-    taxId: "TAX-001234",
-    timezone: "UTC",
-    dateFormat: "MM/DD/YYYY",
-    language: "en",
-    lowStockAlert: true,
-    expiryAlert: true,
-    emailNotifications: true,
-    receiptFooter: "Thank you for your purchase!",
-  });
-
-  // Theme
-  const [theme, setTheme] = useState({
-    accent: "217 91% 50%",
-    primary: "215 25% 15%",
-    secondary: "210 40% 96%",
-    background: "210 20% 98%",
-    foreground: "215 25% 15%",
-    muted: "215 15% 47%",
-    border: "214 20% 90%",
-    card: "0 0% 100%",
-    radius: 0.5,
-  });
-
-  // Marketing
-  const [marketing, setMarketing] = useState({
-    loyaltyEnabled: true,
-    pointsPerDollar: "1",
-    redemptionRate: "100",
-    welcomeDiscount: "10",
-    smsEnabled: false,
-    emailCampaigns: true,
-    promoMessage: "Get 10% off on your first purchase!",
-  });
+  // Adapters so existing { ...obj, field: v } onChange handlers keep working
+  const setStoreInfo = (data: typeof storeInfo) => setStoreInfoStore(data);
+  const setGlobalSettings = (data: typeof globalSettings) => setGlobalStore(data);
+  const setTheme = (data: typeof theme) => setThemeStore(data);
+  const setMarketing = (data: typeof marketing) => setMarketingStore(data);
 
   const handleSave = (section: string) => {
     toast({ title: `${section} saved`, description: "Settings updated successfully." });
@@ -195,7 +163,7 @@ const SystemSettings = () => {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="space-y-1.5">
                     <Label>Currency</Label>
-                    <Select value={globalSettings.currency} onValueChange={(v) => setGlobalSettings({ ...globalSettings, currency: v })}>
+                    <Select value={globalSettings.currency} onValueChange={(v) => setGlobalSettings({ ...globalSettings, currency: v as typeof globalSettings.currency })}>
                       <SelectTrigger><SelectValue /></SelectTrigger>
                       <SelectContent>
                         <SelectItem value="USD">USD ($)</SelectItem>

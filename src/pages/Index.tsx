@@ -31,15 +31,30 @@ import {
   getTopMedicines,
   formatTimeAgo,
 } from "@/stores/sales-store";
+import { useMedicineStore, getMedicineStatus } from "@/stores/medicine-store";
+import { useCustomerStore } from "@/stores/customer-store";
+import { useEmployeeStore } from "@/stores/employee-store";
 
 const Dashboard = () => {
   const sales = useSalesStore((s) => s.sales);
+  const medicines = useMedicineStore((s) => s.medicines);
+  const customers = useCustomerStore((s) => s.customers);
+  const employees = useEmployeeStore((s) => s.employees);
   const navigate = useNavigate();
 
   const todaySales = useMemo(() => getTodaySales(sales), [sales]);
   const monthSales = useMemo(() => getThisMonthSales(sales), [sales]);
   const weeklyChart = useMemo(() => getWeeklySalesChart(sales), [sales]);
   const topMeds = useMemo(() => getTopMedicines(sales), [sales]);
+
+  const lowOrOutCount = useMemo(
+    () => medicines.filter((m) => {
+      const st = getMedicineStatus(m);
+      return st === "Low Stock" || st === "Out of Stock";
+    }).length,
+    [medicines]
+  );
+  const activeStaff = employees.filter((e) => e.status === "active").length;
 
   const todayTotal = todaySales.reduce((s, r) => s + r.total, 0);
   const monthTotal = monthSales.reduce((s, r) => s + r.total, 0);
@@ -146,6 +161,36 @@ const Dashboard = () => {
           </Card>
         ))}
       </div>
+
+      {/* Secondary overview */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {[
+          { label: "Medicines", value: medicines.length, sub: "in catalog", icon: Pill, color: "text-primary", bg: "bg-primary/10", path: "/medicines" },
+          { label: "Stock Alerts", value: lowOrOutCount, sub: "low / out of stock", icon: AlertTriangle, color: "text-warning", bg: "bg-warning/10", path: "/alerts" },
+          { label: "Customers", value: customers.length, sub: "registered", icon: Users, color: "text-accent", bg: "bg-accent/10", path: "/customers" },
+          { label: "Active Staff", value: activeStaff, sub: "on roster", icon: ShoppingCart, color: "text-info", bg: "bg-info/10", path: "/employees" },
+        ].map((s) => (
+          <button
+            key={s.label}
+            onClick={() => navigate(s.path)}
+            className="text-left"
+          >
+            <Card className="border-none shadow-sm hover:shadow-md transition-shadow">
+              <CardContent className="p-4 flex items-center gap-3">
+                <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${s.bg}`}>
+                  <s.icon className={`h-5 w-5 ${s.color}`} />
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground">{s.label}</p>
+                  <p className="text-lg font-heading font-bold">{s.value}</p>
+                  <p className="text-[10px] text-muted-foreground">{s.sub}</p>
+                </div>
+              </CardContent>
+            </Card>
+          </button>
+        ))}
+      </div>
+
 
       {/* Charts */}
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
