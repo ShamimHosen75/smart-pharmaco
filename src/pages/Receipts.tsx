@@ -214,7 +214,7 @@ const Receipts = () => {
               {filtered.slice(0, 200).map((s) => {
                 const isOpen = expanded.has(s.id);
                 return (
-                  <FragmentWithKey key={s.id}>
+                  <Fragment key={s.id}>
                     <TableRow key={s.id}>
                       <TableCell className="pr-0">
                         <Button
