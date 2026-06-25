@@ -14,6 +14,8 @@ export interface Branch {
 
 interface BranchStore {
   branches: Branch[];
+  currentBranchId: string;
+  setCurrentBranch: (id: string) => void;
   addBranch: (b: Omit<Branch, "id" | "createdAt">) => void;
   updateBranch: (id: string, b: Partial<Branch>) => void;
   deleteBranch: (id: string) => void;
