@@ -163,7 +163,7 @@ const SystemSettings = () => {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="space-y-1.5">
                     <Label>Currency</Label>
-                    <Select value={globalSettings.currency} onValueChange={(v) => setGlobalSettings({ ...globalSettings, currency: v as typeof globalSettings.currency })}>}
+                    <Select value={globalSettings.currency} onValueChange={(v) => setGlobalSettings({ ...globalSettings, currency: v as typeof globalSettings.currency })}>
                       <SelectTrigger><SelectValue /></SelectTrigger>
                       <SelectContent>
                         <SelectItem value="USD">USD ($)</SelectItem>
