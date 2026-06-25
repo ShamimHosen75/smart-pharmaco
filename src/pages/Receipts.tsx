@@ -47,6 +47,8 @@ const Receipts = () => {
 
   const [branchFilter, setBranchFilter] = useState<string>(currentBranchId || "all");
   const [search, setSearch] = useState("");
+  const [fromDate, setFromDate] = useState<string>("");
+  const [toDate, setToDate] = useState<string>("");
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const toggleExpanded = (id: string) =>
     setExpanded((prev) => {
@@ -58,13 +60,17 @@ const Receipts = () => {
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
+    const from = fromDate ? new Date(fromDate + "T00:00:00").getTime() : null;
+    const to = toDate ? new Date(toDate + "T23:59:59.999").getTime() : null;
     return [...sales]
       .sort((a, b) => b.date.getTime() - a.date.getTime())
       .filter((s) => {
         if (branchFilter !== "all") {
-          // Include legacy sales (no branchId) only when "all" is selected
           if (s.branchId !== branchFilter) return false;
         }
+        const t = s.date.getTime();
+        if (from !== null && t < from) return false;
+        if (to !== null && t > to) return false;
         if (!q) return true;
         return (
           s.invoiceNo.toLowerCase().includes(q) ||
@@ -72,7 +78,7 @@ const Receipts = () => {
           s.customerPhone.toLowerCase().includes(q)
         );
       });
-  }, [sales, branchFilter, search]);
+  }, [sales, branchFilter, search, fromDate, toDate]);
 
   const last = filtered[0];
   const branchName = (id?: string) =>
