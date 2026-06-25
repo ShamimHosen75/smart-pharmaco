@@ -60,6 +60,10 @@ const initialBranches: Branch[] = [
 
 export const useBranchStore = create<BranchStore>((set) => ({
   branches: initialBranches,
+  currentBranchId: initialBranches[0].id,
+  setCurrentBranch: (id) => set({ currentBranchId: id }),
+
+
 
   addBranch: (b) =>
     set((s) => ({
