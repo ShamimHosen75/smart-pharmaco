@@ -190,6 +190,16 @@ const POS = () => {
     if (lastInvoice) printInvoice(format, lastInvoice);
   };
 
+  const handleDownloadPDF = async (format: "thermal" | "a4") => {
+    if (!lastInvoice) return;
+    toast({ title: "Preparing PDF...", description: `${lastInvoice.invoiceNo}-${format}.pdf` });
+    try {
+      await downloadInvoicePDF(format, lastInvoice);
+    } catch (e) {
+      toast({ title: "PDF failed", description: String(e), variant: "destructive" });
+    }
+  };
+
   const handleDone = () => {
     setShowInvoiceDialog(false);
     setCart([]);
