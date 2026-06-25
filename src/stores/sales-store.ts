@@ -8,7 +8,7 @@ export interface SaleRecord {
   customerId?: string;
   customerName: string;
   customerPhone: string;
-  items: { id?: string; name: string; qty: number; price: number }[];
+  items: { id?: string; name: string; qty: number; price: number; batch?: string; expiry?: string }[];
   subtotal: number;
   discount: number;
   vat: number;
