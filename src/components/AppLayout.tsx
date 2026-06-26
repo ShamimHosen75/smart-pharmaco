@@ -14,6 +14,7 @@ import {
   AlertTriangle,
   DollarSign,
   UserCog,
+  CreditCard,
   Globe,
   ChevronLeft,
   ChevronRight,
@@ -60,6 +61,7 @@ const navGroups = [
     label: "System",
     items: [
       { title: "Branches", icon: Globe, path: "/branches" },
+      { title: "Subscriptions", icon: CreditCard, path: "/subscriptions" },
       { title: "Settings", icon: Settings, path: "/settings" },
     ],
   },

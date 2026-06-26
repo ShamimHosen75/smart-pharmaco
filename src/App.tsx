@@ -18,6 +18,7 @@ import Alerts from "./pages/Alerts";
 import Accounting from "./pages/Accounting";
 import Employees from "./pages/Employees";
 import Branches from "./pages/Branches";
+import Subscriptions from "./pages/Subscriptions";
 import NotFound from "./pages/NotFound";
 import { useThemeSync } from "./hooks/use-theme-sync";
 
@@ -51,6 +52,7 @@ const App = () => (
             <Route path="/accounting" element={<Accounting />} />
             <Route path="/employees" element={<Employees />} />
             <Route path="/branches" element={<Branches />} />
+            <Route path="/subscriptions" element={<Subscriptions />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
           </AppLayout>
