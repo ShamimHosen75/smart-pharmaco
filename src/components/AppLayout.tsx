@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import {
   LayoutDashboard,
@@ -18,11 +18,13 @@ import {
   Globe,
   ChevronLeft,
   ChevronRight,
-  LogOut,
   Bell,
   Search,
+  Menu,
+  X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const navGroups = [
   {
@@ -69,15 +71,39 @@ const navGroups = [
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const [collapsed, setCollapsed] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
   const location = useLocation();
+  const isMobile = useIsMobile();
+
+  // close mobile drawer on route change
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [location.pathname]);
+
+  const showSidebar = !isMobile || mobileOpen;
 
   return (
     <div className="flex h-screen overflow-hidden">
+      {/* Mobile overlay */}
+      {isMobile && mobileOpen && (
+        <div
+          className="fixed inset-0 z-30 bg-foreground/40 backdrop-blur-sm md:hidden"
+          onClick={() => setMobileOpen(false)}
+        />
+      )}
+
       {/* Sidebar */}
       <aside
         className={cn(
           "flex flex-col bg-sidebar text-sidebar-foreground transition-all duration-300 ease-in-out",
-          collapsed ? "w-[68px]" : "w-[250px]"
+          isMobile
+            ? cn(
+                "fixed inset-y-0 left-0 z-40 w-[260px] shadow-2xl",
+                mobileOpen ? "translate-x-0" : "-translate-x-full"
+              )
+            : collapsed
+              ? "w-[68px]"
+              : "w-[250px]"
         )}
       >
         {/* Logo */}
@@ -85,13 +111,22 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground font-heading font-bold text-sm">
             M
           </div>
-          {!collapsed && (
-            <div className="animate-slide-in">
+          {(!collapsed || isMobile) && (
+            <div className="animate-slide-in flex-1">
               <h1 className="font-heading font-bold text-sm text-sidebar-primary-foreground leading-tight">
                 MediCore
               </h1>
               <p className="text-[10px] text-sidebar-foreground/60">Pharmacy POS</p>
             </div>
+          )}
+          {isMobile && (
+            <button
+              onClick={() => setMobileOpen(false)}
+              className="rounded-lg p-1.5 text-sidebar-foreground/70 hover:bg-sidebar-accent/50"
+              aria-label="Close menu"
+            >
+              <X className="h-4 w-4" />
+            </button>
           )}
         </div>
 
@@ -99,7 +134,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         <nav className="flex-1 overflow-y-auto py-4 px-2 space-y-6">
           {navGroups.map((group) => (
             <div key={group.label}>
-              {!collapsed && (
+              {(!collapsed || isMobile) && (
                 <p className="px-3 mb-2 text-[10px] font-semibold uppercase tracking-wider text-sidebar-foreground/40">
                   {group.label}
                 </p>
@@ -119,7 +154,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                       )}
                     >
                       <item.icon className="h-4 w-4 shrink-0" />
-                      {!collapsed && <span>{item.title}</span>}
+                      {(!collapsed || isMobile) && <span>{item.title}</span>}
                     </Link>
                   );
                 })}
@@ -128,36 +163,49 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           ))}
         </nav>
 
-        {/* Collapse toggle */}
-        <div className="border-t border-sidebar-border p-2">
-          <button
-            onClick={() => setCollapsed(!collapsed)}
-            className="flex w-full items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm text-sidebar-foreground/60 hover:bg-sidebar-accent/50 transition-colors"
-          >
-            {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
-            {!collapsed && <span>Collapse</span>}
-          </button>
-        </div>
+        {/* Collapse toggle - desktop only */}
+        {!isMobile && (
+          <div className="border-t border-sidebar-border p-2">
+            <button
+              onClick={() => setCollapsed(!collapsed)}
+              className="flex w-full items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm text-sidebar-foreground/60 hover:bg-sidebar-accent/50 transition-colors"
+            >
+              {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
+              {!collapsed && <span>Collapse</span>}
+            </button>
+          </div>
+        )}
       </aside>
 
       {/* Main content */}
-      <div className="flex flex-1 flex-col overflow-hidden">
+      <div className="flex flex-1 flex-col overflow-hidden min-w-0">
         {/* Top bar */}
-        <header className="flex h-16 items-center justify-between border-b border-border bg-card px-6">
-          <div className="relative w-80">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <input
-              type="text"
-              placeholder="Search medicines, customers..."
-              className="h-9 w-full rounded-lg border border-input bg-background pl-10 pr-4 text-sm outline-none focus:ring-2 focus:ring-ring/20 transition-shadow"
-            />
+        <header className="flex h-16 items-center justify-between gap-3 border-b border-border bg-card px-3 sm:px-6">
+          <div className="flex items-center gap-2 flex-1 min-w-0">
+            {isMobile && (
+              <button
+                onClick={() => setMobileOpen(true)}
+                className="rounded-lg p-2 text-muted-foreground hover:bg-muted transition-colors"
+                aria-label="Open menu"
+              >
+                <Menu className="h-5 w-5" />
+              </button>
+            )}
+            <div className="relative w-full max-w-xs sm:max-w-sm md:w-80">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <input
+                type="text"
+                placeholder="Search..."
+                className="h-9 w-full rounded-lg border border-input bg-background pl-10 pr-4 text-sm outline-none focus:ring-2 focus:ring-ring/20 transition-shadow"
+              />
+            </div>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
             <button className="relative rounded-lg p-2 text-muted-foreground hover:bg-muted transition-colors">
               <Bell className="h-5 w-5" />
               <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-destructive" />
             </button>
-            <div className="h-8 w-px bg-border" />
+            <div className="hidden sm:block h-8 w-px bg-border" />
             <div className="flex items-center gap-2">
               <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-semibold">
                 SA
@@ -171,7 +219,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         </header>
 
         {/* Page content */}
-        <main className="flex-1 overflow-y-auto p-6">
+        <main className="flex-1 overflow-y-auto p-3 sm:p-4 md:p-6">
           {children}
         </main>
       </div>
