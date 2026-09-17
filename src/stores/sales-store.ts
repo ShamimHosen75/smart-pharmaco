@@ -68,7 +68,7 @@ function generateSeedSales(): SaleRecord[] {
         invoiceNo: `INV-${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, "0")}${String(d.getDate()).padStart(2, "0")}-${String(sales.length + 1).padStart(4, "0")}`,
         date: d,
         customerName: customers[Math.floor(Math.random() * customers.length)],
-        customerPhone: Math.random() > 0.4 ? `+1 ${Math.floor(1000000000 + Math.random() * 9000000000)}` : "",
+        customerPhone: Math.random() > 0.4 ? `+880 1${Math.floor(3 + Math.random() * 7)}${Math.floor(10000000 + Math.random() * 89999999)}` : "",
         items,
         subtotal,
         discount: discountAmt,

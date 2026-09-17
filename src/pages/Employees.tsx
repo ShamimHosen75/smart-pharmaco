@@ -375,13 +375,13 @@ const Employees = () => {
               </div>
               <div className="space-y-2">
                 <Label>Email</Label>
-                <Input type="email" placeholder="john@medicore.com" value={formEmail} onChange={(e) => setFormEmail(e.target.value)} />
+                <Input type="email" placeholder="rakib@medicore.com.bd" value={formEmail} onChange={(e) => setFormEmail(e.target.value)} />
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Phone</Label>
-                <Input placeholder="+1 555 000 0000" value={formPhone} onChange={(e) => setFormPhone(e.target.value)} />
+                <Input placeholder="+880 1711 000000" value={formPhone} onChange={(e) => setFormPhone(e.target.value)} />
               </div>
               <div className="space-y-2">
                 <Label>Role</Label>

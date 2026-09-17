@@ -114,8 +114,8 @@ const seedTenants: Tenant[] = [
   {
     id: "t-1",
     name: "MediCore HQ",
-    ownerEmail: "owner@medicore.com",
-    phone: "+1 234 567 890",
+    ownerEmail: "owner@medicore.com.bd",
+    phone: "+880 1711 000000",
     planId: "plan-enterprise",
     billingCycle: "yearly",
     status: "active",

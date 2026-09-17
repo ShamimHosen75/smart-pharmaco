@@ -472,7 +472,7 @@ const Companies = () => {
               <div className="space-y-2">
                 <Label>Phone *</Label>
                 <Input
-                  placeholder="+1 555-0100"
+                  placeholder="+880 1711-000100"
                   value={form.phone}
                   onChange={(e) => set("phone", e.target.value)}
                   maxLength={20}
