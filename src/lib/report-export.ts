@@ -1,4 +1,5 @@
 import type { SaleRecord } from "@/stores/sales-store";
+import { money } from "@/lib/currency";
 
 function csvEscape(v: unknown): string {
   const s = v == null ? "" : String(v);

@@ -1,4 +1,5 @@
 import { useSettingsStore, CURRENCY_SYMBOLS } from "@/stores/settings-store";
+import { currencySymbol } from "@/lib/currency";
 
 /** Current currency symbol (non-reactive read — safe inside helpers & print templates). */
 export const currencySymbol = () =>

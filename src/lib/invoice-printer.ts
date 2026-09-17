@@ -1,3 +1,4 @@
+import { money } from "@/lib/currency";
 interface InvoiceItem {
   name: string;
   qty: number;
