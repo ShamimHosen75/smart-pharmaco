@@ -370,12 +370,12 @@ export default function Subscriptions() {
                             {t.status === "trialing" && t.trialEndsAt && (
                               <span className="flex items-center gap-1 text-blue-600">
                                 <Clock className="h-3 w-3" />
-                                Trial ends {new fmtDate(Date(t.trialEndsAt))}
+                                Trial ends {fmtDate(t.trialEndsAt)}
                               </span>
                             )}
                             {t.currentPeriodEnd && t.status !== "trialing" && (
                               <span className="text-muted-foreground">
-                                Renews {new fmtDate(Date(t.currentPeriodEnd))}
+                                Renews {fmtDate(t.currentPeriodEnd)}
                               </span>
                             )}
                           </td>
