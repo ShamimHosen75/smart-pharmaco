@@ -1,4 +1,5 @@
 import { money, vatPercent } from "@/lib/currency";
+import { useSettingsStore } from "@/stores/settings-store";
 interface InvoiceItem {
   name: string;
   qty: number;
@@ -21,13 +22,7 @@ interface InvoiceData {
 }
 
 
-const pharmacyInfo = {
-  name: "MediCore Pharmacy",
-  address: "123 Health Street, Medical District",
-  phone: "+1 234 567 890",
-  email: "info@medicore.com",
-  license: "PH-2024-12345",
-};
+const getPharmacyInfo = () => useSettingsStore.getState().storeInfo;
 
 function generateInvoiceNo() {
   const d = new Date();
@@ -57,10 +52,10 @@ th{font-size:10px;text-transform:uppercase;border-bottom:1px solid #000;padding:
 .total-row{font-weight:bold;font-size:13px}
 </style></head><body>
 <div class="center">
-  <h2 style="margin:4px 0;font-size:16px">${pharmacyInfo.name}</h2>
-  <p style="margin:2px 0;font-size:10px">${pharmacyInfo.address}</p>
-  <p style="margin:2px 0;font-size:10px">Tel: ${pharmacyInfo.phone}</p>
-  <p style="margin:2px 0;font-size:10px">License: ${pharmacyInfo.license}</p>
+  <h2 style="margin:4px 0;font-size:16px">${getPharmacyInfo().name}</h2>
+  <p style="margin:2px 0;font-size:10px">${getPharmacyInfo().address}</p>
+  <p style="margin:2px 0;font-size:10px">Tel: ${getPharmacyInfo().phone}</p>
+  <p style="margin:2px 0;font-size:10px">License: ${getPharmacyInfo().license}</p>
 </div>
 <div class="line"></div>
 <table><tr><td style="font-size:10px">Invoice: ${data.invoiceNo}</td><td style="text-align:right;font-size:10px">${data.date}</td></tr></table>
@@ -121,10 +116,10 @@ thead th:last-child{border-radius:0 6px 0 0}
 </style></head><body>
 <div class="header">
   <div class="brand">
-    <h1>⚕ ${pharmacyInfo.name}</h1>
-    <p>${pharmacyInfo.address}</p>
-    <p>Tel: ${pharmacyInfo.phone} | Email: ${pharmacyInfo.email}</p>
-    <p>License: ${pharmacyInfo.license}</p>
+    <h1>⚕ ${getPharmacyInfo().name}</h1>
+    <p>${getPharmacyInfo().address}</p>
+    <p>Tel: ${getPharmacyInfo().phone} | Email: ${getPharmacyInfo().email}</p>
+    <p>License: ${getPharmacyInfo().license}</p>
   </div>
   <div class="invoice-info">
     <h2>Invoice</h2>
@@ -154,7 +149,7 @@ thead th:last-child{border-radius:0 6px 0 0}
 <tr class="total-row"><td>Total</td><td style="text-align:right">${money(data.total)}</td></tr>
 </table></div>
 <div class="footer">
-  <p>Thank you for choosing ${pharmacyInfo.name}!</p>
+  <p>Thank you for choosing ${getPharmacyInfo().name}!</p>
   <p>This is a computer-generated invoice. No signature required.</p>
 </div>
 </body></html>`;
