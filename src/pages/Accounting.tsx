@@ -19,6 +19,7 @@ import {
 import { useSalesStore, getThisMonthSales } from "@/stores/sales-store";
 import {
 import { money } from "@/lib/currency";
+import { fmtDate } from "@/lib/format-date";
   useExpenseStore, getExpensesByCategory, getExpensesByDateRange,
   type ExpenseCategory,
 } from "@/stores/expense-store";
@@ -232,7 +233,7 @@ const Accounting = () => {
                 <TableBody>
                   {recentExpenses.map((e) => (
                     <TableRow key={e.id}>
-                      <TableCell className="text-xs">{e.date.toLocaleDateString()}</TableCell>
+                      <TableCell className="text-xs">{fmtDate(e.date)}</TableCell>
                       <TableCell>
                         <Badge variant="secondary" className="text-xs">{e.category}</Badge>
                       </TableCell>

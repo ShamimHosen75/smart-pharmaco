@@ -1,5 +1,6 @@
 import type { SaleRecord } from "@/stores/sales-store";
 import { money } from "@/lib/currency";
+import { fmtDate, fmtTime } from "@/lib/format-date";
 
 function csvEscape(v: unknown): string {
   const s = v == null ? "" : String(v);
@@ -42,8 +43,8 @@ export function exportSalesCSV(sales: SaleRecord[], opts: SalesExportOptions) {
   lines.push(header.map(csvEscape).join(","));
 
   for (const s of sales) {
-    const date = s.date.toLocaleDateString();
-    const time = s.date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    const date = fmtDate(s.date);
+    const time = fmtTime(s.date);
     const branch = opts.branchNameOf ? opts.branchNameOf(s) : (opts.branchName ?? "");
     for (const i of s.items) {
       lines.push([

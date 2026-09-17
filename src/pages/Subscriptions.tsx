@@ -67,6 +67,7 @@ import { useSettingsStore, CURRENCY_SYMBOLS } from "@/stores/settings-store";
 import { toast } from "@/hooks/use-toast";
 import { MoreVertical } from "lucide-react";
 import { money } from "@/lib/currency";
+import { fmtDate } from "@/lib/format-date";
 
 const statusVariant = (s: Tenant["status"]) => {
   switch (s) {
@@ -369,12 +370,12 @@ export default function Subscriptions() {
                             {t.status === "trialing" && t.trialEndsAt && (
                               <span className="flex items-center gap-1 text-blue-600">
                                 <Clock className="h-3 w-3" />
-                                Trial ends {new Date(t.trialEndsAt).toLocaleDateString()}
+                                Trial ends {new fmtDate(Date(t.trialEndsAt))}
                               </span>
                             )}
                             {t.currentPeriodEnd && t.status !== "trialing" && (
                               <span className="text-muted-foreground">
-                                Renews {new Date(t.currentPeriodEnd).toLocaleDateString()}
+                                Renews {new fmtDate(Date(t.currentPeriodEnd))}
                               </span>
                             )}
                           </td>

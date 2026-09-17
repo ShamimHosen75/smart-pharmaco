@@ -24,6 +24,7 @@ import { useMedicineStore, getMedicineStatus } from "@/stores/medicine-store";
 import { useBranchStore } from "@/stores/branch-store";
 import { useCustomerStore } from "@/stores/customer-store";
 import { money, vatPercent, vatRate } from "@/lib/currency";
+import { fmtDate, fmtDateLong, fmtTime } from "@/lib/format-date";
 
 interface CartItem {
   id: string;
@@ -151,10 +152,7 @@ const POS = () => {
     }));
     const invoice: InvoiceData = {
       invoiceNo,
-      date: now.toLocaleDateString("en-US", {
-        year: "numeric", month: "short", day: "numeric",
-        hour: "2-digit", minute: "2-digit",
-      }),
+      date: `${fmtDateLong(now)} ${fmtTime(now)}`,
       customerName,
       customerPhone,
       items: items.map(({ name, qty, price, batch, expiry }) => ({ name, qty, price, batch, expiry })),

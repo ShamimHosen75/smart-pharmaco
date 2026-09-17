@@ -23,6 +23,7 @@ import {
 import { useSalesStore, type SaleRecord, type RefundRecord, formatTimeAgo } from "@/stores/sales-store";
 import { toast } from "@/hooks/use-toast";
 import { money, vatPercent, vatRate } from "@/lib/currency";
+import { fmtDate } from "@/lib/format-date";
 
 interface ReturnItem {
   name: string;
@@ -191,7 +192,7 @@ const Returns = () => {
                   </Button>
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  {selectedSale.customerName || "Walk-in"} · {selectedSale.date.toLocaleDateString()} · Paid: {selectedSale.paymentMethod}
+                  {selectedSale.customerName || "Walk-in"} · {fmtDate(selectedSale.date)} · Paid: {selectedSale.paymentMethod}
                 </p>
               </CardHeader>
               <CardContent>

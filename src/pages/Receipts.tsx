@@ -22,14 +22,12 @@ import { useBranchStore } from "@/stores/branch-store";
 import { printInvoice, downloadInvoice, downloadInvoicePDF, type InvoiceData } from "@/lib/invoice-printer";
 import { exportSalesCSV, exportSalesPDF } from "@/lib/report-export";
 import { money } from "@/lib/currency";
+import { fmtDate, fmtDateLong, fmtTime } from "@/lib/format-date";
 
 function toInvoiceData(sale: SaleRecord): InvoiceData {
   return {
     invoiceNo: sale.invoiceNo,
-    date: sale.date.toLocaleDateString("en-US", {
-      year: "numeric", month: "short", day: "numeric",
-      hour: "2-digit", minute: "2-digit",
-    }),
+    date: `${fmtDateLong(sale.date)} ${fmtTime(sale.date)}`,
     customerName: sale.customerName,
     customerPhone: sale.customerPhone,
     items: sale.items.map(({ name, qty, price, batch, expiry }) => ({ name, qty, price, batch, expiry })),
@@ -317,8 +315,8 @@ const Receipts = () => {
                       </TableCell>
                       <TableCell className="font-mono text-xs">{s.invoiceNo}</TableCell>
                       <TableCell className="text-xs text-muted-foreground">
-                        {s.date.toLocaleDateString()}{" "}
-                        {s.date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                        {fmtDate(s.date)}{" "}
+                        {fmtTime(s.date)}
                       </TableCell>
                       <TableCell className="text-xs">{branchName(s.branchId)}</TableCell>
                       <TableCell className="text-sm">
