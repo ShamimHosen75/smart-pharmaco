@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/dialog";
 import { useSalesStore, type SaleRecord, type RefundRecord, formatTimeAgo } from "@/stores/sales-store";
 import { toast } from "@/hooks/use-toast";
-import { money } from "@/lib/currency";
+import { money, vatPercent, vatRate } from "@/lib/currency";
 
 interface ReturnItem {
   name: string;
@@ -94,7 +94,7 @@ const Returns = () => {
 
   const returnItemsSelected = returnItems.filter((i) => i.returnQty > 0);
   const refundSubtotal = returnItemsSelected.reduce((s, i) => s + i.price * i.returnQty, 0);
-  const refundVat = refundSubtotal * 0.05;
+  const refundVat = refundSubtotal * vatRate();
   const refundTotal = refundSubtotal + refundVat;
 
   const processRefund = () => {
@@ -283,7 +283,7 @@ const Returns = () => {
                     <span>{money(refundSubtotal)}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">VAT (5%)</span>
+                    <span className="text-muted-foreground">VAT ({vatPercent()}%)</span>
                     <span>{money(refundVat)}</span>
                   </div>
                   <Separator className="my-2" />

@@ -23,7 +23,7 @@ import { useSalesStore } from "@/stores/sales-store";
 import { useMedicineStore, getMedicineStatus } from "@/stores/medicine-store";
 import { useBranchStore } from "@/stores/branch-store";
 import { useCustomerStore } from "@/stores/customer-store";
-import { money } from "@/lib/currency";
+import { money, vatPercent, vatRate } from "@/lib/currency";
 
 interface CartItem {
   id: string;
@@ -124,7 +124,7 @@ const POS = () => {
 
   const subtotal = cart.reduce((s, c) => s + c.price * c.qty, 0);
   const discountAmt = subtotal * (discount / 100);
-  const vat = (subtotal - discountAmt) * 0.05;
+  const vat = (subtotal - discountAmt) * vatRate();
   const total = subtotal - discountAmt + vat;
 
   const pickCustomer = (cId: string) => {
@@ -181,7 +181,7 @@ const POS = () => {
     // Deduct stock
     for (const item of cart) adjustStock(item.id, -item.qty);
 
-    // Loyalty: 1 point per $10
+    // Loyalty: 1 point per 10 currency units spent
     if (customerId) addLoyaltyPoints(customerId, Math.floor(total / 10));
 
     setLastInvoice(invoice);
@@ -404,7 +404,7 @@ const POS = () => {
             <div className="space-y-1 text-sm">
               <div className="flex justify-between"><span className="text-muted-foreground">Subtotal</span><span>{money(subtotal)}</span></div>
               <div className="flex justify-between"><span className="text-muted-foreground">Discount</span><span className="text-destructive">-{money(discountAmt)}</span></div>
-              <div className="flex justify-between"><span className="text-muted-foreground">VAT (5%)</span><span>{money(vat)}</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground">VAT ({vatPercent()}%)</span><span>{money(vat)}</span></div>
               <Separator className="my-2" />
               <div className="flex justify-between text-lg font-heading font-bold">
                 <span>Total</span>
