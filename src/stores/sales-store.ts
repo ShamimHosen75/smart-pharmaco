@@ -33,12 +33,12 @@ export interface RefundRecord {
 // Seed data: past 7 days of sales for a realistic dashboard
 function generateSeedSales(): SaleRecord[] {
   const medicines = [
-    "Paracetamol 500mg", "Amoxicillin 250mg", "Omeprazole 20mg", "Cetirizine 10mg",
-    "Losartan 50mg", "Ibuprofen 400mg", "Metformin 500mg", "Atorvastatin 10mg",
-    "Diclofenac 50mg", "Ranitidine 150mg", "Azithromycin 500mg", "Ciprofloxacin 500mg",
+    "Napa 500mg", "Amoxin 250mg", "Seclo 20mg", "Alatrol 10mg",
+    "Losatan 50mg", "Profen 400mg", "Comet 500mg", "Atorva 10mg",
+    "Voltalin 50mg", "Neotack 150mg", "Azin 500mg", "Ciprocin 500mg",
   ];
-  const prices = [2.5, 5.75, 3.2, 1.8, 6.4, 2.9, 4.1, 7.5, 3.0, 2.2, 8.5, 4.8];
-  const customers = ["Ahmed Khan", "Sara Ali", "Walk-in", "Fatima Noor", "Omar Hassan", "Lina Saeed", "Yusuf Iqbal", "Walk-in"];
+  const prices = [1.2, 7.0, 7.0, 3.0, 8.0, 2.5, 3.5, 10.0, 4.0, 2.5, 35.0, 12.0];
+  const customers = ["Abdul Karim", "Shirin Akter", "Walk-in", "Nasrin Sultana", "Mohammad Rahman", "Jahangir Alam", "Rina Begum", "Walk-in"];
 
   const sales: SaleRecord[] = [];
   const now = new Date();
@@ -60,7 +60,7 @@ function generateSeedSales(): SaleRecord[] {
       const subtotal = items.reduce((s, i) => s + i.price * i.qty, 0);
       const discountPct = Math.random() < 0.3 ? Math.floor(Math.random() * 15) : 0;
       const discountAmt = subtotal * (discountPct / 100);
-      const vat = (subtotal - discountAmt) * 0.05;
+      const vat = 0; // medicines are VAT-exempt in Bangladesh by default
       const total = subtotal - discountAmt + vat;
 
       sales.push({
