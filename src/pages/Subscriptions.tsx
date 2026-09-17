@@ -264,8 +264,8 @@ export default function Subscriptions() {
       {/* KPIs */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
         {[
-          { label: "MRR", value: `${sym}{money(stats.mrr)}`, icon: DollarSign, color: "text-emerald-600" },
-          { label: "ARR", value: `${sym}{money(stats.arr, 0)}`, icon: DollarSign, color: "text-blue-600" },
+          { label: "MRR", value: money(stats.mrr), icon: DollarSign, color: "text-emerald-600" },
+          { label: "ARR", value: money(stats.arr, 0), icon: DollarSign, color: "text-blue-600" },
           { label: "Active", value: stats.active, icon: CheckCircle2, color: "text-emerald-600" },
           { label: "Trialing", value: stats.trialing, icon: Sparkles, color: "text-blue-600" },
           { label: "Past Due", value: stats.pastDue, icon: AlertTriangle, color: "text-amber-600" },

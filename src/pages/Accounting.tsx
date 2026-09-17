@@ -193,7 +193,7 @@ const Accounting = () => {
                       cx="50%"
                       cy="50%"
                       outerRadius={90}
-                      label={({ category, percent }) => `${category} {money((percent * 100), 0)}%`}
+                      label={({ category, percent }) => `${category} ${(percent * 100).toFixed(0)}%`}
                     >
                       {expenseByCat.map((_, i) => (
                         <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />

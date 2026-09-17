@@ -87,7 +87,7 @@ const Dashboard = () => {
     {
       title: "Today's Sales",
       value: fmtFull(todayTotal),
-      change: `${todayChange >= 0 ? "+" : ""}{money(todayChange, 1)}%`,
+      change: `${todayChange >= 0 ? "+" : ""}${todayChange.toFixed(1)}%`,
       up: todayChange >= 0,
       subtitle: `${todayCount} transactions`,
       icon: DollarSign,
@@ -209,7 +209,7 @@ const Dashboard = () => {
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
                 <XAxis dataKey="day" className="text-xs" tick={{ fill: "hsl(215, 15%, 47%)" }} />
-                <YAxis className="text-xs" tick={{ fill: "hsl(215, 15%, 47%)" }} tickFormatter={(v) => `$${v >= 1000 ? `{money((v/1000), 0)}k` : v}`} />
+                <YAxis className="text-xs" tick={{ fill: "hsl(215, 15%, 47%)" }} tickFormatter={(v) => (v >= 1000 ? `${currencySymbol()}${(v / 1000).toFixed(0)}k` : `${currencySymbol()}${v}`)} />
                 <Tooltip
                   contentStyle={{
                     backgroundColor: "hsl(0, 0%, 100%)",
