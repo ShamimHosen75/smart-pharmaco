@@ -81,13 +81,13 @@ const Dashboard = () => {
   const fmt = (n: number) =>
     n >= 1000 ? `${money((n / 1000), 1)}k` : `${money(n, 0)}`;
   const fmtFull = (n: number) =>
-    `$${n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    money(n);
 
   const stats = [
     {
       title: "Today's Sales",
       value: fmtFull(todayTotal),
-      change: `${todayChange >= 0 ? "+" : ""}${todayChange.toFixed(1)}%`,
+      change: `${todayChange >= 0 ? "+" : ""}{money(todayChange, 1)}%`,
       up: todayChange >= 0,
       subtitle: `${todayCount} transactions`,
       icon: DollarSign,
@@ -116,7 +116,7 @@ const Dashboard = () => {
     },
     {
       title: "Avg. Order Value",
-      value: todayCount > 0 ? fmtFull(todayTotal / todayCount) : "$0.00",
+      value: todayCount > 0 ? fmtFull(todayTotal / todayCount) : money(0),
       change: todayCount > 0 ? `Per sale` : "No sales",
       up: true,
       subtitle: "Today",
@@ -209,7 +209,7 @@ const Dashboard = () => {
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
                 <XAxis dataKey="day" className="text-xs" tick={{ fill: "hsl(215, 15%, 47%)" }} />
-                <YAxis className="text-xs" tick={{ fill: "hsl(215, 15%, 47%)" }} tickFormatter={(v) => `$${v >= 1000 ? `${(v/1000).toFixed(0)}k` : v}`} />
+                <YAxis className="text-xs" tick={{ fill: "hsl(215, 15%, 47%)" }} tickFormatter={(v) => `$${v >= 1000 ? `{money((v/1000), 0)}k` : v}`} />
                 <Tooltip
                   contentStyle={{
                     backgroundColor: "hsl(0, 0%, 100%)",
@@ -279,7 +279,7 @@ const Dashboard = () => {
                       <td className="py-3 font-medium text-primary">{sale.invoiceNo}</td>
                       <td className="py-3">{sale.customerName || "Walk-in"}</td>
                       <td className="py-3">{sale.items.length}</td>
-                      <td className="py-3 font-medium">${sale.total.toFixed(2)}</td>
+                      <td className="py-3 font-medium">{money(sale.total)}</td>
                       <td className="py-3 text-muted-foreground">{formatTimeAgo(sale.date)}</td>
                     </tr>
                   ))}

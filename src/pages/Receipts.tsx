@@ -235,7 +235,7 @@ const Receipts = () => {
                 <p className="text-xs text-muted-foreground mt-1">
                   {last.date.toLocaleString()} • {last.customerName || "Walk-in"} •{" "}
                   <span className="text-foreground font-medium">
-                    ${last.total.toFixed(2)}
+                    {money(last.total)}
                   </span>
                 </p>
               </div>
@@ -328,7 +328,7 @@ const Receipts = () => {
                       </TableCell>
                       <TableCell className="text-center text-sm">{s.items.length}</TableCell>
                       <TableCell className="text-right text-sm font-medium">
-                        ${s.total.toFixed(2)}
+                        {money(s.total)}
                       </TableCell>
                       <TableCell className="text-right pr-4">
                         <DropdownMenu>
@@ -386,8 +386,8 @@ const Receipts = () => {
                                     <td className="px-3 py-1.5 font-mono text-[11px]">{i.batch || "—"}</td>
                                     <td className="px-3 py-1.5 text-[11px]">{i.expiry || "—"}</td>
                                     <td className="px-3 py-1.5 text-center">{i.qty}</td>
-                                    <td className="px-3 py-1.5 text-right">${i.price.toFixed(2)}</td>
-                                    <td className="px-3 py-1.5 text-right">${(i.price * i.qty).toFixed(2)}</td>
+                                    <td className="px-3 py-1.5 text-right">{money(i.price)}</td>
+                                    <td className="px-3 py-1.5 text-right">{money((i.price * i.qty))}</td>
                                   </tr>
                                 ))}
                               </tbody>

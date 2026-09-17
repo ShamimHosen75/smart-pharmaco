@@ -269,8 +269,8 @@ const Purchases = () => {
                             <td className="px-3 py-2">{it.medicineName}</td>
                             <td className="px-3 py-2 font-mono text-xs">{it.batchNo}</td>
                             <td className="px-3 py-2 text-right">{it.qty}</td>
-                            <td className="px-3 py-2 text-right">${it.unitCost.toFixed(2)}</td>
-                            <td className="px-3 py-2 text-right font-medium">${(it.qty * it.unitCost).toFixed(2)}</td>
+                            <td className="px-3 py-2 text-right">{money(it.unitCost)}</td>
+                            <td className="px-3 py-2 text-right font-medium">{money((it.qty * it.unitCost))}</td>
                           </tr>
                         ))}
                       </tbody>
@@ -278,9 +278,9 @@ const Purchases = () => {
                   </div>
                 </div>
                 <div className="border-t border-border pt-4 space-y-1 text-sm">
-                  <div className="flex justify-between"><span className="text-muted-foreground">Subtotal</span><span>${viewPurchase.subtotal.toFixed(2)}</span></div>
-                  <div className="flex justify-between"><span className="text-muted-foreground">Discount</span><span>-${viewPurchase.discount.toFixed(2)}</span></div>
-                  <div className="flex justify-between font-bold text-base"><span>Total</span><span>${viewPurchase.total.toFixed(2)}</span></div>
+                  <div className="flex justify-between"><span className="text-muted-foreground">Subtotal</span><span>{money(viewPurchase.subtotal)}</span></div>
+                  <div className="flex justify-between"><span className="text-muted-foreground">Discount</span><span>-{money(viewPurchase.discount)}</span></div>
+                  <div className="flex justify-between font-bold text-base"><span>Total</span><span>{money(viewPurchase.total)}</span></div>
                 </div>
                 {viewPurchase.notes && (
                   <div><p className="text-sm text-muted-foreground">Notes</p><p className="text-sm">{viewPurchase.notes}</p></div>
@@ -374,7 +374,7 @@ const Purchases = () => {
                         <Input type="date" value={it.expiryDate} onChange={(e) => updateItem(idx, "expiryDate", e.target.value)} />
                       </div>
                     </div>
-                    <p className="text-xs text-muted-foreground text-right">Line total: ${(it.qty * it.unitCost).toFixed(2)}</p>
+                    <p className="text-xs text-muted-foreground text-right">Line total: {money((it.qty * it.unitCost))}</p>
                   </div>
                 ))}
               </div>
@@ -382,9 +382,9 @@ const Purchases = () => {
 
             {/* Totals preview */}
             <div className="border-t border-border pt-3 text-sm space-y-1">
-              <div className="flex justify-between"><span className="text-muted-foreground">Subtotal</span><span>${items.reduce((s, it) => s + it.qty * it.unitCost, 0).toFixed(2)}</span></div>
-              <div className="flex justify-between"><span className="text-muted-foreground">Discount</span><span>-${(parseFloat(form.discount) || 0).toFixed(2)}</span></div>
-              <div className="flex justify-between font-bold"><span>Total</span><span>${(items.reduce((s, it) => s + it.qty * it.unitCost, 0) - (parseFloat(form.discount) || 0)).toFixed(2)}</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground">Subtotal</span><span>{money(items.reduce((s, it) => s + it.qty * it.unitCost, 0))}</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground">Discount</span><span>-{money((parseFloat(form.discount) || 0))}</span></div>
+              <div className="flex justify-between font-bold"><span>Total</span><span>{money((items.reduce((s, it) => s + it.qty * it.unitCost, 0) - (parseFloat(form.discount) || 0)))}</span></div>
             </div>
 
             <div className="space-y-2">

@@ -284,11 +284,11 @@ const POS = () => {
                   <div className="mt-auto pt-2 flex items-center justify-between w-full">
                     <div className="flex items-baseline gap-1">
                       <span className="text-sm font-heading font-bold text-primary">
-                        ${finalPrice.toFixed(2)}
+                        {money(finalPrice)}
                       </span>
                       {med.discount > 0 && (
                         <span className="text-[10px] text-muted-foreground line-through">
-                          ${med.price.toFixed(2)}
+                          {money(med.price)}
                         </span>
                       )}
                     </div>
@@ -371,7 +371,7 @@ const POS = () => {
                 <div key={item.id} className="flex items-center gap-2 rounded-lg bg-muted/30 p-2">
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium truncate">{item.name}</p>
-                    <p className="text-xs text-muted-foreground">${item.price.toFixed(2)} × {item.qty}</p>
+                    <p className="text-xs text-muted-foreground">{money(item.price)} × {item.qty}</p>
                   </div>
                   <div className="flex items-center gap-1">
                     <button onClick={() => updateQty(item.id, -1)} className="rounded p-1 hover:bg-muted"><Minus className="h-3 w-3" /></button>
@@ -379,7 +379,7 @@ const POS = () => {
                     <button onClick={() => updateQty(item.id, 1)} className="rounded p-1 hover:bg-muted"><Plus className="h-3 w-3" /></button>
                     <button onClick={() => removeItem(item.id)} className="rounded p-1 hover:bg-muted ml-1"><Trash2 className="h-3 w-3 text-destructive" /></button>
                   </div>
-                  <p className="w-16 text-right text-sm font-medium">${(item.price * item.qty).toFixed(2)}</p>
+                  <p className="w-16 text-right text-sm font-medium">{money((item.price * item.qty))}</p>
                 </div>
               ))}
             </div>
@@ -401,13 +401,13 @@ const POS = () => {
 
             {/* Totals */}
             <div className="space-y-1 text-sm">
-              <div className="flex justify-between"><span className="text-muted-foreground">Subtotal</span><span>${subtotal.toFixed(2)}</span></div>
-              <div className="flex justify-between"><span className="text-muted-foreground">Discount</span><span className="text-destructive">-${discountAmt.toFixed(2)}</span></div>
-              <div className="flex justify-between"><span className="text-muted-foreground">VAT (5%)</span><span>${vat.toFixed(2)}</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground">Subtotal</span><span>{money(subtotal)}</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground">Discount</span><span className="text-destructive">-{money(discountAmt)}</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground">VAT (5%)</span><span>{money(vat)}</span></div>
               <Separator className="my-2" />
               <div className="flex justify-between text-lg font-heading font-bold">
                 <span>Total</span>
-                <span className="text-primary">${total.toFixed(2)}</span>
+                <span className="text-primary">{money(total)}</span>
               </div>
             </div>
 
@@ -434,7 +434,7 @@ const POS = () => {
             </div>
 
             <Button className="w-full mt-3" size="lg" disabled={cart.length === 0} onClick={completeSale}>
-              Complete Sale — ${total.toFixed(2)}
+              Complete Sale — {money(total)}
             </Button>
           </CardContent>
         </Card>
@@ -473,7 +473,7 @@ const POS = () => {
                 <Separator />
                 <div className="flex justify-between font-heading font-bold text-lg">
                   <span>Total</span>
-                  <span className="text-primary">${lastInvoice.total.toFixed(2)}</span>
+                  <span className="text-primary">{money(lastInvoice.total)}</span>
                 </div>
               </div>
 

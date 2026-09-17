@@ -237,7 +237,7 @@ const Medicines = () => {
                     <td className="px-4 py-3 font-mono text-xs">{med.batch}</td>
                     <td className="px-4 py-3">{med.expiry}</td>
                     <td className="px-4 py-3">{med.stock}</td>
-                    <td className="px-4 py-3 font-medium">${med.price.toFixed(2)}</td>
+                    <td className="px-4 py-3 font-medium">{money(med.price)}</td>
                     <td className="px-4 py-3">
                       <Badge variant={statusVariant(med._status)}>{med._status}</Badge>
                     </td>

@@ -169,7 +169,7 @@ const Returns = () => {
                           {sale.customerName || "Walk-in"} · {sale.items.length} items · {formatTimeAgo(sale.date)}
                         </p>
                       </div>
-                      <span className="text-sm font-heading font-bold">${sale.total.toFixed(2)}</span>
+                      <span className="text-sm font-heading font-bold">{money(sale.total)}</span>
                     </button>
                   ))}
                 </div>
@@ -206,7 +206,7 @@ const Returns = () => {
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium">{item.name}</p>
                         <p className="text-xs text-muted-foreground">
-                          ${item.price.toFixed(2)} each · Max returnable: {item.maxQty}
+                          {money(item.price)} each · Max returnable: {item.maxQty}
                         </p>
                       </div>
                       {item.maxQty > 0 ? (
@@ -231,7 +231,7 @@ const Returns = () => {
                         <Badge variant="secondary" className="text-[10px]">Already returned</Badge>
                       )}
                       <p className="w-16 text-right text-sm font-medium">
-                        ${(item.price * item.returnQty).toFixed(2)}
+                        {money((item.price * item.returnQty))}
                       </p>
                     </div>
                   ))}
@@ -262,7 +262,7 @@ const Returns = () => {
                         <span>
                           {item.name} × {item.returnQty}
                         </span>
-                        <span className="font-medium">${(item.price * item.returnQty).toFixed(2)}</span>
+                        <span className="font-medium">{money((item.price * item.returnQty))}</span>
                       </div>
                     ))}
                   </div>
@@ -279,16 +279,16 @@ const Returns = () => {
                 <div className="space-y-1 text-sm">
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Subtotal</span>
-                    <span>${refundSubtotal.toFixed(2)}</span>
+                    <span>{money(refundSubtotal)}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">VAT (5%)</span>
-                    <span>${refundVat.toFixed(2)}</span>
+                    <span>{money(refundVat)}</span>
                   </div>
                   <Separator className="my-2" />
                   <div className="flex justify-between text-lg font-heading font-bold">
                     <span>Refund Total</span>
-                    <span className="text-destructive">${refundTotal.toFixed(2)}</span>
+                    <span className="text-destructive">{money(refundTotal)}</span>
                   </div>
                 </div>
 
@@ -326,7 +326,7 @@ const Returns = () => {
                   disabled={returnItemsSelected.length === 0 || !reason.trim()}
                   onClick={processRefund}
                 >
-                  Process Refund — ${refundTotal.toFixed(2)}
+                  Process Refund — {money(refundTotal)}
                 </Button>
               </>
             )}
@@ -361,7 +361,7 @@ const Returns = () => {
                       <td className="py-3 font-mono text-primary">{r.originalInvoiceNo}</td>
                       <td className="py-3">{r.customerName || "Walk-in"}</td>
                       <td className="py-3">{r.items.length}</td>
-                      <td className="py-3 font-medium">${r.total.toFixed(2)}</td>
+                      <td className="py-3 font-medium">{money(r.total)}</td>
                       <td className="py-3 text-muted-foreground max-w-[200px] truncate">{r.reason}</td>
                       <td className="py-3 text-muted-foreground">{formatTimeAgo(r.date)}</td>
                     </tr>
@@ -403,7 +403,7 @@ const Returns = () => {
               <Separator />
               <div className="flex justify-between font-heading font-bold text-lg">
                 <span>Refunded</span>
-                <span className="text-destructive">${refundTotal.toFixed(2)}</span>
+                <span className="text-destructive">{money(refundTotal)}</span>
               </div>
             </div>
             <Button variant="outline" className="w-full" onClick={resetForm}>
