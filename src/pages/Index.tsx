@@ -79,7 +79,7 @@ const Dashboard = () => {
   );
 
   const fmt = (n: number) =>
-    n >= 1000 ? `$${(n / 1000).toFixed(1)}k` : `$${n.toFixed(0)}`;
+    n >= 1000 ? `${money((n / 1000), 1)}k` : `${money(n, 0)}`;
   const fmtFull = (n: number) =>
     `$${n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
@@ -217,7 +217,7 @@ const Dashboard = () => {
                     borderRadius: "8px",
                     fontSize: "12px",
                   }}
-                  formatter={(value: number) => [`$${value.toFixed(2)}`, "Sales"]}
+                  formatter={(value: number) => [`${money(value)}`, "Sales"]}
                 />
                 <Area type="monotone" dataKey="sales" stroke="hsl(217, 91%, 50%)" fill="url(#salesGrad)" strokeWidth={2} />
               </AreaChart>

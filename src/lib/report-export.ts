@@ -79,8 +79,8 @@ function reportHTML(sales: SaleRecord[], opts: SalesExportOptions): string {
         <td>${i.batch ?? "—"}</td>
         <td>${i.expiry ?? "—"}</td>
         <td style="text-align:center">${i.qty}</td>
-        <td style="text-align:right">$${i.price.toFixed(2)}</td>
-        <td style="text-align:right">$${(i.qty * i.price).toFixed(2)}</td>
+        <td style="text-align:right">${money(i.price)}</td>
+        <td style="text-align:right">${money((i.qty * i.price))}</td>
         <td style="text-align:right">${idx === 0 ? "$" + s.total.toFixed(2) : ""}</td>
       </tr>`
       )
@@ -110,7 +110,7 @@ tr:nth-child(even) td{background:#fafafa}
 <div class="kpis">
   <div class="kpi"><p>Invoices</p><strong>${sales.length}</strong></div>
   <div class="kpi"><p>Items Sold</p><strong>${totalItems}</strong></div>
-  <div class="kpi"><p>Revenue</p><strong>$${totalRevenue.toFixed(2)}</strong></div>
+  <div class="kpi"><p>Revenue</p><strong>${money(totalRevenue)}</strong></div>
 </div>
 <table>
 <thead><tr>

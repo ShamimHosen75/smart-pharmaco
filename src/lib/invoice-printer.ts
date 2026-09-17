@@ -40,7 +40,7 @@ function thermalHTML(data: InvoiceData): string {
         i.batch || i.expiry
           ? `<tr><td colspan="3" style="font-size:9px;color:#444;padding:0 0 2px 0">${i.batch ? `Batch: ${i.batch}` : ""}${i.batch && i.expiry ? " • " : ""}${i.expiry ? `Exp: ${i.expiry}` : ""}</td></tr>`
           : "";
-      return `<tr><td style="text-align:left;font-size:11px;padding:2px 0">${i.name}</td><td style="text-align:center;font-size:11px">${i.qty}</td><td style="text-align:right;font-size:11px">$${(i.price * i.qty).toFixed(2)}</td></tr>${meta}`;
+      return `<tr><td style="text-align:left;font-size:11px;padding:2px 0">${i.name}</td><td style="text-align:center;font-size:11px">${i.qty}</td><td style="text-align:right;font-size:11px">${money((i.price * i.qty))}</td></tr>${meta}`;
     })
     .join("");
 
@@ -71,12 +71,12 @@ ${data.customerName ? `<p style="font-size:10px;margin:2px 0">Customer: ${data.c
 </table>
 <div class="line"></div>
 <table>
-<tr><td style="font-size:11px">Subtotal</td><td style="text-align:right;font-size:11px">$${data.subtotal.toFixed(2)}</td></tr>
-<tr><td style="font-size:11px">Discount</td><td style="text-align:right;font-size:11px">-$${data.discount.toFixed(2)}</td></tr>
-<tr><td style="font-size:11px">VAT (5%)</td><td style="text-align:right;font-size:11px">$${data.vat.toFixed(2)}</td></tr>
+<tr><td style="font-size:11px">Subtotal</td><td style="text-align:right;font-size:11px">${money(data.subtotal)}</td></tr>
+<tr><td style="font-size:11px">Discount</td><td style="text-align:right;font-size:11px">${"-" + money(data.discount)}</td></tr>
+<tr><td style="font-size:11px">VAT (5%)</td><td style="text-align:right;font-size:11px">${money(data.vat)}</td></tr>
 </table>
 <div class="line"></div>
-<table><tr class="total-row"><td>TOTAL</td><td style="text-align:right">$${data.total.toFixed(2)}</td></tr></table>
+<table><tr class="total-row"><td>TOTAL</td><td style="text-align:right">${money(data.total)}</td></tr></table>
 <p style="font-size:10px;margin:4px 0">Payment: ${data.paymentMethod.toUpperCase()}</p>
 <div class="line"></div>
 <div class="center" style="margin-top:6px">
@@ -90,7 +90,7 @@ function a4HTML(data: InvoiceData): string {
   const rows = data.items
     .map(
       (i, idx) =>
-        `<tr style="border-bottom:1px solid #eee"><td style="padding:8px;font-size:13px">${idx + 1}</td><td style="padding:8px;font-size:13px">${i.name}</td><td style="padding:8px;font-size:12px;color:#555">${i.batch || "—"}</td><td style="padding:8px;font-size:12px;color:#555">${i.expiry || "—"}</td><td style="padding:8px;text-align:center;font-size:13px">${i.qty}</td><td style="padding:8px;text-align:right;font-size:13px">$${i.price.toFixed(2)}</td><td style="padding:8px;text-align:right;font-size:13px">$${(i.price * i.qty).toFixed(2)}</td></tr>`
+        `<tr style="border-bottom:1px solid #eee"><td style="padding:8px;font-size:13px">${idx + 1}</td><td style="padding:8px;font-size:13px">${i.name}</td><td style="padding:8px;font-size:12px;color:#555">${i.batch || "—"}</td><td style="padding:8px;font-size:12px;color:#555">${i.expiry || "—"}</td><td style="padding:8px;text-align:center;font-size:13px">${i.qty}</td><td style="padding:8px;text-align:right;font-size:13px">${money(i.price)}</td><td style="padding:8px;text-align:right;font-size:13px">${money((i.price * i.qty))}</td></tr>`
     )
     .join("");
 
@@ -147,10 +147,10 @@ thead th:last-child{border-radius:0 6px 0 0}
 <tbody>${rows}</tbody>
 </table>
 <div class="summary"><table>
-<tr><td>Subtotal</td><td style="text-align:right">$${data.subtotal.toFixed(2)}</td></tr>
-<tr><td>Discount</td><td style="text-align:right">-$${data.discount.toFixed(2)}</td></tr>
-<tr><td>VAT (5%)</td><td style="text-align:right">$${data.vat.toFixed(2)}</td></tr>
-<tr class="total-row"><td>Total</td><td style="text-align:right">$${data.total.toFixed(2)}</td></tr>
+<tr><td>Subtotal</td><td style="text-align:right">${money(data.subtotal)}</td></tr>
+<tr><td>Discount</td><td style="text-align:right">${"-" + money(data.discount)}</td></tr>
+<tr><td>VAT (5%)</td><td style="text-align:right">${money(data.vat)}</td></tr>
+<tr class="total-row"><td>Total</td><td style="text-align:right">${money(data.total)}</td></tr>
 </table></div>
 <div class="footer">
   <p>Thank you for choosing ${pharmacyInfo.name}!</p>
