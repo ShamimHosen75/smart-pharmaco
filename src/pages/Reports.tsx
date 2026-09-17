@@ -10,6 +10,7 @@ import { toast } from "@/hooks/use-toast";
 import { useSalesStore } from "@/stores/sales-store";
 import { useBranchStore } from "@/stores/branch-store";
 import { exportSalesCSV, exportSalesPDF } from "@/lib/report-export";
+import { money } from "@/lib/currency";
 
 type Range = "today" | "week" | "month" | "all";
 

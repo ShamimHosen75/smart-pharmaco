@@ -66,6 +66,7 @@ import {
 import { useSettingsStore, CURRENCY_SYMBOLS } from "@/stores/settings-store";
 import { toast } from "@/hooks/use-toast";
 import { MoreVertical } from "lucide-react";
+import { money } from "@/lib/currency";
 
 const statusVariant = (s: Tenant["status"]) => {
   switch (s) {

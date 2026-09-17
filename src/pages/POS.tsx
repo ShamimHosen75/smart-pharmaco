@@ -23,6 +23,7 @@ import { useSalesStore } from "@/stores/sales-store";
 import { useMedicineStore, getMedicineStatus } from "@/stores/medicine-store";
 import { useBranchStore } from "@/stores/branch-store";
 import { useCustomerStore } from "@/stores/customer-store";
+import { money } from "@/lib/currency";
 
 interface CartItem {
   id: string;

@@ -21,6 +21,7 @@ import {
 import { Package, Plus, Search, Edit, Trash2, Eye, X, DollarSign, ShoppingCart, Clock } from "lucide-react";
 import { usePurchaseStore, type PurchaseItem } from "@/stores/purchase-store";
 import { useCompanyStore } from "@/stores/company-store";
+import { money } from "@/lib/currency";
 
 type FormData = {
   companyId: string;

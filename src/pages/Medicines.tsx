@@ -44,6 +44,7 @@ import {
   useMedicineStore,
 } from "@/stores/medicine-store";
 import { useCompanyStore } from "@/stores/company-store";
+import { money } from "@/lib/currency";
 
 const statusVariant = (s: MedicineStatus): "default" | "secondary" | "destructive" | "outline" => {
   switch (s) {

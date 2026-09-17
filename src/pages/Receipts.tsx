@@ -21,6 +21,7 @@ import { useSalesStore, type SaleRecord } from "@/stores/sales-store";
 import { useBranchStore } from "@/stores/branch-store";
 import { printInvoice, downloadInvoice, downloadInvoicePDF, type InvoiceData } from "@/lib/invoice-printer";
 import { exportSalesCSV, exportSalesPDF } from "@/lib/report-export";
+import { money } from "@/lib/currency";
 
 function toInvoiceData(sale: SaleRecord): InvoiceData {
   return {

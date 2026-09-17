@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/dialog";
 import { useSalesStore, type SaleRecord, type RefundRecord, formatTimeAgo } from "@/stores/sales-store";
 import { toast } from "@/hooks/use-toast";
+import { money } from "@/lib/currency";
 
 interface ReturnItem {
   name: string;

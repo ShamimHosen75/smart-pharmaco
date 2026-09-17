@@ -34,6 +34,7 @@ import {
 import { useMedicineStore, getMedicineStatus } from "@/stores/medicine-store";
 import { useCustomerStore } from "@/stores/customer-store";
 import { useEmployeeStore } from "@/stores/employee-store";
+import { money, currencySymbol } from "@/lib/currency";
 
 const Dashboard = () => {
   const sales = useSalesStore((s) => s.sales);
