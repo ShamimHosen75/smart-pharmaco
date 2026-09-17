@@ -9,7 +9,7 @@ export interface StoreInfo {
 }
 
 export interface GlobalSettings {
-  currency: "USD" | "EUR" | "GBP" | "SAR" | "AED";
+  currency: "BDT" | "USD" | "EUR" | "GBP" | "INR" | "SAR" | "AED";
   vat: string;
   taxId: string;
   timezone: string;
@@ -55,7 +55,9 @@ interface SettingsStore {
 }
 
 export const CURRENCY_SYMBOLS: Record<GlobalSettings["currency"], string> = {
+  BDT: "৳",
   USD: "$",
+  INR: "₹",
   EUR: "€",
   GBP: "£",
   SAR: "﷼",
@@ -65,17 +67,17 @@ export const CURRENCY_SYMBOLS: Record<GlobalSettings["currency"], string> = {
 export const useSettingsStore = create<SettingsStore>((set) => ({
   storeInfo: {
     name: "MediCore Pharmacy",
-    phone: "+1 234 567 890",
-    address: "123 Health Street, Medical District",
-    email: "info@medicore.com",
-    license: "PH-2024-12345",
+    phone: "+880 1711 000000",
+    address: "House 12, Road 5, Dhanmondi, Dhaka 1205, Bangladesh",
+    email: "info@medicore.com.bd",
+    license: "DGDA-DH-2024-12345",
   },
   global: {
-    currency: "USD",
-    vat: "5",
-    taxId: "TAX-001234",
-    timezone: "UTC",
-    dateFormat: "MM/DD/YYYY",
+    currency: "BDT",
+    vat: "0",
+    taxId: "BIN-001234567-0101",
+    timezone: "Asia/Dhaka",
+    dateFormat: "DD/MM/YYYY",
     language: "en",
     lowStockAlert: true,
     expiryAlert: true,
