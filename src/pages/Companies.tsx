@@ -41,6 +41,7 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { useCompanyStore, type Company } from "@/stores/company-store";
+import { money } from "@/lib/currency";
 
 type FormData = {
   name: string;
@@ -63,7 +64,7 @@ const emptyForm: FormData = {
 };
 
 const fmt = (n: number) =>
-  n.toLocaleString("en-US", { style: "currency", currency: "USD", minimumFractionDigits: 0 });
+  money(n, 0);
 
 const Companies = () => {
   const { companies, addCompany, updateCompany, deleteCompany, toggleStatus } =

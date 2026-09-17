@@ -179,7 +179,7 @@ const Purchases = () => {
         <Card className="border-none shadow-sm">
           <CardContent className="p-4 flex items-center gap-3">
             <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center"><DollarSign className="h-5 w-5 text-primary" /></div>
-            <div><p className="text-xs text-muted-foreground">Total Value</p><p className="text-xl font-heading font-bold">${totalValue.toLocaleString(undefined, { minimumFractionDigits: 2 })}</p></div>
+            <div><p className="text-xs text-muted-foreground">Total Value</p><p className="text-xl font-heading font-bold">{money(totalValue)}</p></div>
           </CardContent>
         </Card>
       </div>
@@ -220,7 +220,7 @@ const Purchases = () => {
                       <td className="px-4 py-3 font-medium">{p.companyName}</td>
                       <td className="px-4 py-3">{p.date}</td>
                       <td className="px-4 py-3">{p.items.length} item{p.items.length !== 1 && "s"}</td>
-                      <td className="px-4 py-3 font-medium">${p.total.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+                      <td className="px-4 py-3 font-medium">{money(p.total)}</td>
                       <td className="px-4 py-3"><Badge variant={statusVariant(p.status) as any}>{p.status}</Badge></td>
                       <td className="px-4 py-3">
                         <div className="flex gap-1" onClick={(e) => e.stopPropagation()}>

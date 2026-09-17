@@ -18,6 +18,7 @@ import {
 } from "recharts";
 import { useSalesStore, getThisMonthSales } from "@/stores/sales-store";
 import {
+import { money } from "@/lib/currency";
   useExpenseStore, getExpensesByCategory, getExpensesByDateRange,
   type ExpenseCategory,
 } from "@/stores/expense-store";
@@ -37,7 +38,7 @@ const PIE_COLORS = [
   "hsl(0 72% 51%)",
 ];
 
-const fmt = (n: number) => `$${n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+const fmt = (n: number) => money(n);
 
 const Accounting = () => {
   const { sales } = useSalesStore();

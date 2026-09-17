@@ -16,9 +16,10 @@ import {
 } from "lucide-react";
 import { useCustomerStore, type Customer } from "@/stores/customer-store";
 import { useSalesStore } from "@/stores/sales-store";
+import { money } from "@/lib/currency";
 
 const fmt = (n: number) =>
-  `$${n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  money(n);
 
 const emptyForm = {
   name: "",

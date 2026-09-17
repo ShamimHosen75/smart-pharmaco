@@ -48,6 +48,7 @@ import {
   type AttendanceStatus,
 } from "@/stores/employee-store";
 import { useBranchStore } from "@/stores/branch-store";
+import { money } from "@/lib/currency";
 
 const roleBadgeVariant = (role: Role) => {
   switch (role) {
@@ -165,7 +166,7 @@ const Employees = () => {
           { label: "Active Staff", value: activeCount, icon: UserCog, color: "text-primary", bg: "bg-primary/10" },
           { label: "Present Today", value: todayPresent, icon: CheckCircle2, color: "text-accent", bg: "bg-accent/10" },
           { label: "Absent Today", value: todayAbsent, icon: XCircle, color: "text-destructive", bg: "bg-destructive/10" },
-          { label: "Monthly Payroll", value: `$${totalSalary.toLocaleString()}`, icon: Clock, color: "text-warning", bg: "bg-warning/10" },
+          { label: "Monthly Payroll", value: money(totalSalary, 0), icon: Clock, color: "text-warning", bg: "bg-warning/10" },
         ].map((s) => (
           <Card key={s.label} className="border-none shadow-sm">
             <CardContent className="p-4 flex items-center gap-3">
@@ -232,7 +233,7 @@ const Employees = () => {
                         </td>
                         <td className="px-4 py-3 text-muted-foreground">{emp.branch}</td>
                         <td className="px-4 py-3">{emp.phone}</td>
-                        <td className="px-4 py-3 font-medium">${emp.salary.toLocaleString()}</td>
+                        <td className="px-4 py-3 font-medium">{money(emp.salary, 0)}</td>
                         <td className="px-4 py-3">
                           <button onClick={() => toggleStatus(emp.id)}>
                             <Badge variant={emp.status === "active" ? "default" : "secondary"} className="cursor-pointer">
