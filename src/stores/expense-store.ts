@@ -63,14 +63,14 @@ function generateSeedExpenses(): ExpenseRecord[] {
       const pays = payees[cat];
 
       const amountRanges: Record<ExpenseCategory, [number, number]> = {
-        Rent: [800, 800],
-        Utilities: [50, 200],
-        Salaries: [400, 900],
-        Supplies: [20, 100],
-        Transport: [10, 60],
-        Marketing: [30, 150],
-        Maintenance: [50, 300],
-        Other: [10, 80],
+        Rent: [45000, 45000],
+        Utilities: [4000, 15000],
+        Salaries: [30000, 120000],
+        Supplies: [1500, 8000],
+        Transport: [800, 5000],
+        Marketing: [2500, 12000],
+        Maintenance: [3000, 20000],
+        Other: [800, 6000],
       };
       const [min, max] = amountRanges[cat];
       const amount = Math.round((min + Math.random() * (max - min)) * 100) / 100;
