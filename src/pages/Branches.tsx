@@ -393,7 +393,7 @@ const Branches = () => {
               <div className="space-y-2">
                 <Label>Phone *</Label>
                 <Input
-                  placeholder="+1 555-0100"
+                  placeholder="+880 1711-000100"
                   value={form.phone}
                   onChange={(e) => set("phone", e.target.value)}
                   maxLength={20}
@@ -407,7 +407,7 @@ const Branches = () => {
               <Label>Email</Label>
               <Input
                 type="email"
-                placeholder="branch@medicore.com"
+                placeholder="branch@medicore.com.bd"
                 value={form.email}
                 onChange={(e) => set("email", e.target.value)}
                 maxLength={255}

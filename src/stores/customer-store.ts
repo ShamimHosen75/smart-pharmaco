@@ -25,20 +25,29 @@ export interface PaymentRecord {
 
 function generateSeedCustomers(): Customer[] {
   const names = [
-    "Ahmed Khan", "Sara Ali", "Fatima Noor", "Omar Hassan",
-    "Lina Saeed", "Yusuf Iqbal", "Nadia Bashir", "Tariq Mahmood",
-    "Hana Youssef", "Bilal Farooq", "Maryam Qureshi", "Zain Aslam",
+    "Abdul Karim", "Shirin Akter", "Mohammad Rahman", "Nasrin Sultana",
+    "Jahangir Alam", "Rina Begum", "Shakil Ahmed", "Taslima Khatun",
+    "Mizanur Rahman", "Habibur Rahman", "Rokeya Parvin", "Kamrul Hasan",
   ];
   const phones = [
-    "+1 5551234567", "+1 5559876543", "+1 5554567890", "+1 5553216549",
-    "+1 5557891234", "+1 5556543210", "+1 5558527413", "+1 5559638527",
-    "+1 5551472583", "+1 5553698521", "+1 5552583691", "+1 5557418529",
+    "+880 11310-200001",
+    "+880 11411-200138",
+    "+880 11512-200275",
+    "+880 11613-200412",
+    "+880 11714-200549",
+    "+880 11815-200686",
+    "+880 11916-200823",
+    "+880 11317-200960",
+    "+880 11418-201097",
+    "+880 11519-201234",
+    "+880 11620-201371",
+    "+880 11721-201508",
   ];
-  const emails = names.map((n) => `${n.split(" ")[0].toLowerCase()}@email.com`);
+  const emails = names.map((n) => `${n.split(" ")[0].toLowerCase()}@gmail.com`);
 
   return names.map((name, i) => {
-    const totalSpent = Math.round((200 + Math.random() * 2000) * 100) / 100;
-    const totalDue = Math.random() < 0.4 ? Math.round(Math.random() * 150 * 100) / 100 : 0;
+    const totalSpent = Math.round((800 + Math.random() * 12000) * 100) / 100;
+    const totalDue = Math.random() < 0.4 ? Math.round(Math.random() * 2500 * 100) / 100 : 0;
     const joinDate = new Date();
     joinDate.setDate(joinDate.getDate() - Math.floor(30 + Math.random() * 300));
 
@@ -47,8 +56,8 @@ function generateSeedCustomers(): Customer[] {
       name,
       phone: phones[i],
       email: emails[i],
-      address: `${100 + i * 12} Main Street, City`,
-      loyaltyPoints: Math.floor(totalSpent / 10),
+      address: `House ${10 + i * 3}, Road ${2 + i}, Dhanmondi, Dhaka`,
+      loyaltyPoints: Math.floor(totalSpent / 100),
       totalSpent,
       totalDue,
       joinDate,
@@ -71,7 +80,7 @@ function generateSeedPayments(customers: Customer[]): PaymentRecord[] {
           id: crypto.randomUUID(),
           customerId: c.id,
           date: d,
-          amount: Math.round((20 + Math.random() * 100) * 100) / 100,
+          amount: Math.round((200 + Math.random() * 1500) * 100) / 100,
           method: ["cash", "card", "bank_transfer"][Math.floor(Math.random() * 3)],
           note: "Partial payment",
         });

@@ -21,6 +21,8 @@ import {
   useExpenseStore, getExpensesByCategory, getExpensesByDateRange,
   type ExpenseCategory,
 } from "@/stores/expense-store";
+import { money } from "@/lib/currency";
+import { fmtDate } from "@/lib/format-date";
 
 const expenseCategories: ExpenseCategory[] = [
   "Rent", "Utilities", "Salaries", "Supplies", "Transport", "Marketing", "Maintenance", "Other",
@@ -37,7 +39,7 @@ const PIE_COLORS = [
   "hsl(0 72% 51%)",
 ];
 
-const fmt = (n: number) => `$${n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+const fmt = (n: number) => money(n);
 
 const Accounting = () => {
   const { sales } = useSalesStore();
@@ -231,7 +233,7 @@ const Accounting = () => {
                 <TableBody>
                   {recentExpenses.map((e) => (
                     <TableRow key={e.id}>
-                      <TableCell className="text-xs">{e.date.toLocaleDateString()}</TableCell>
+                      <TableCell className="text-xs">{fmtDate(e.date)}</TableCell>
                       <TableCell>
                         <Badge variant="secondary" className="text-xs">{e.category}</Badge>
                       </TableCell>

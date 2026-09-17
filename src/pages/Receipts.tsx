@@ -21,14 +21,13 @@ import { useSalesStore, type SaleRecord } from "@/stores/sales-store";
 import { useBranchStore } from "@/stores/branch-store";
 import { printInvoice, downloadInvoice, downloadInvoicePDF, type InvoiceData } from "@/lib/invoice-printer";
 import { exportSalesCSV, exportSalesPDF } from "@/lib/report-export";
+import { money } from "@/lib/currency";
+import { fmtDate, fmtDateLong, fmtTime } from "@/lib/format-date";
 
 function toInvoiceData(sale: SaleRecord): InvoiceData {
   return {
     invoiceNo: sale.invoiceNo,
-    date: sale.date.toLocaleDateString("en-US", {
-      year: "numeric", month: "short", day: "numeric",
-      hour: "2-digit", minute: "2-digit",
-    }),
+    date: `${fmtDateLong(sale.date)} ${fmtTime(sale.date)}`,
     customerName: sale.customerName,
     customerPhone: sale.customerPhone,
     items: sale.items.map(({ name, qty, price, batch, expiry }) => ({ name, qty, price, batch, expiry })),
@@ -235,7 +234,7 @@ const Receipts = () => {
                 <p className="text-xs text-muted-foreground mt-1">
                   {last.date.toLocaleString()} • {last.customerName || "Walk-in"} •{" "}
                   <span className="text-foreground font-medium">
-                    ${last.total.toFixed(2)}
+                    {money(last.total)}
                   </span>
                 </p>
               </div>
@@ -316,8 +315,8 @@ const Receipts = () => {
                       </TableCell>
                       <TableCell className="font-mono text-xs">{s.invoiceNo}</TableCell>
                       <TableCell className="text-xs text-muted-foreground">
-                        {s.date.toLocaleDateString()}{" "}
-                        {s.date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                        {fmtDate(s.date)}{" "}
+                        {fmtTime(s.date)}
                       </TableCell>
                       <TableCell className="text-xs">{branchName(s.branchId)}</TableCell>
                       <TableCell className="text-sm">
@@ -328,7 +327,7 @@ const Receipts = () => {
                       </TableCell>
                       <TableCell className="text-center text-sm">{s.items.length}</TableCell>
                       <TableCell className="text-right text-sm font-medium">
-                        ${s.total.toFixed(2)}
+                        {money(s.total)}
                       </TableCell>
                       <TableCell className="text-right pr-4">
                         <DropdownMenu>
@@ -386,8 +385,8 @@ const Receipts = () => {
                                     <td className="px-3 py-1.5 font-mono text-[11px]">{i.batch || "—"}</td>
                                     <td className="px-3 py-1.5 text-[11px]">{i.expiry || "—"}</td>
                                     <td className="px-3 py-1.5 text-center">{i.qty}</td>
-                                    <td className="px-3 py-1.5 text-right">${i.price.toFixed(2)}</td>
-                                    <td className="px-3 py-1.5 text-right">${(i.price * i.qty).toFixed(2)}</td>
+                                    <td className="px-3 py-1.5 text-right">{money(i.price)}</td>
+                                    <td className="px-3 py-1.5 text-right">{money((i.price * i.qty))}</td>
                                   </tr>
                                 ))}
                               </tbody>

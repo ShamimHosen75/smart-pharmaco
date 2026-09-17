@@ -10,6 +10,7 @@ import { toast } from "@/hooks/use-toast";
 import { useSalesStore } from "@/stores/sales-store";
 import { useBranchStore } from "@/stores/branch-store";
 import { exportSalesCSV, exportSalesPDF } from "@/lib/report-export";
+import { money } from "@/lib/currency";
 
 type Range = "today" | "week" | "month" | "all";
 
@@ -135,7 +136,7 @@ const Reports = () => {
             </div>
             <div className="rounded-lg bg-muted/40 p-3">
               <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Revenue</p>
-              <p className="text-lg font-semibold">${stats.revenue.toFixed(2)}</p>
+              <p className="text-lg font-semibold">{money(stats.revenue)}</p>
             </div>
           </div>
 

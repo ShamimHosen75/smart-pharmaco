@@ -66,6 +66,8 @@ import {
 import { useSettingsStore, CURRENCY_SYMBOLS } from "@/stores/settings-store";
 import { toast } from "@/hooks/use-toast";
 import { MoreVertical } from "lucide-react";
+import { money } from "@/lib/currency";
+import { fmtDate } from "@/lib/format-date";
 
 const statusVariant = (s: Tenant["status"]) => {
   switch (s) {
@@ -264,8 +266,8 @@ export default function Subscriptions() {
       {/* KPIs */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
         {[
-          { label: "MRR", value: `${sym}${stats.mrr.toFixed(2)}`, icon: DollarSign, color: "text-emerald-600" },
-          { label: "ARR", value: `${sym}${stats.arr.toFixed(0)}`, icon: DollarSign, color: "text-blue-600" },
+          { label: "MRR", value: money(stats.mrr), icon: DollarSign, color: "text-emerald-600" },
+          { label: "ARR", value: money(stats.arr, 0), icon: DollarSign, color: "text-blue-600" },
           { label: "Active", value: stats.active, icon: CheckCircle2, color: "text-emerald-600" },
           { label: "Trialing", value: stats.trialing, icon: Sparkles, color: "text-blue-600" },
           { label: "Past Due", value: stats.pastDue, icon: AlertTriangle, color: "text-amber-600" },
@@ -368,12 +370,12 @@ export default function Subscriptions() {
                             {t.status === "trialing" && t.trialEndsAt && (
                               <span className="flex items-center gap-1 text-blue-600">
                                 <Clock className="h-3 w-3" />
-                                Trial ends {new Date(t.trialEndsAt).toLocaleDateString()}
+                                Trial ends {fmtDate(t.trialEndsAt)}
                               </span>
                             )}
                             {t.currentPeriodEnd && t.status !== "trialing" && (
                               <span className="text-muted-foreground">
-                                Renews {new Date(t.currentPeriodEnd).toLocaleDateString()}
+                                Renews {fmtDate(t.currentPeriodEnd)}
                               </span>
                             )}
                           </td>

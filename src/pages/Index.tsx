@@ -34,6 +34,7 @@ import {
 import { useMedicineStore, getMedicineStatus } from "@/stores/medicine-store";
 import { useCustomerStore } from "@/stores/customer-store";
 import { useEmployeeStore } from "@/stores/employee-store";
+import { money, currencySymbol } from "@/lib/currency";
 
 const Dashboard = () => {
   const sales = useSalesStore((s) => s.sales);
@@ -79,9 +80,9 @@ const Dashboard = () => {
   );
 
   const fmt = (n: number) =>
-    n >= 1000 ? `$${(n / 1000).toFixed(1)}k` : `$${n.toFixed(0)}`;
+    n >= 1000 ? `${money((n / 1000), 1)}k` : `${money(n, 0)}`;
   const fmtFull = (n: number) =>
-    `$${n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    money(n);
 
   const stats = [
     {
@@ -116,7 +117,7 @@ const Dashboard = () => {
     },
     {
       title: "Avg. Order Value",
-      value: todayCount > 0 ? fmtFull(todayTotal / todayCount) : "$0.00",
+      value: todayCount > 0 ? fmtFull(todayTotal / todayCount) : money(0),
       change: todayCount > 0 ? `Per sale` : "No sales",
       up: true,
       subtitle: "Today",
@@ -209,7 +210,7 @@ const Dashboard = () => {
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
                 <XAxis dataKey="day" className="text-xs" tick={{ fill: "hsl(215, 15%, 47%)" }} />
-                <YAxis className="text-xs" tick={{ fill: "hsl(215, 15%, 47%)" }} tickFormatter={(v) => `$${v >= 1000 ? `${(v/1000).toFixed(0)}k` : v}`} />
+                <YAxis className="text-xs" tick={{ fill: "hsl(215, 15%, 47%)" }} tickFormatter={(v) => (v >= 1000 ? `${currencySymbol()}${(v / 1000).toFixed(0)}k` : `${currencySymbol()}${v}`)} />
                 <Tooltip
                   contentStyle={{
                     backgroundColor: "hsl(0, 0%, 100%)",
@@ -217,7 +218,7 @@ const Dashboard = () => {
                     borderRadius: "8px",
                     fontSize: "12px",
                   }}
-                  formatter={(value: number) => [`$${value.toFixed(2)}`, "Sales"]}
+                  formatter={(value: number) => [`${money(value)}`, "Sales"]}
                 />
                 <Area type="monotone" dataKey="sales" stroke="hsl(217, 91%, 50%)" fill="url(#salesGrad)" strokeWidth={2} />
               </AreaChart>
@@ -279,7 +280,7 @@ const Dashboard = () => {
                       <td className="py-3 font-medium text-primary">{sale.invoiceNo}</td>
                       <td className="py-3">{sale.customerName || "Walk-in"}</td>
                       <td className="py-3">{sale.items.length}</td>
-                      <td className="py-3 font-medium">${sale.total.toFixed(2)}</td>
+                      <td className="py-3 font-medium">{money(sale.total)}</td>
                       <td className="py-3 text-muted-foreground">{formatTimeAgo(sale.date)}</td>
                     </tr>
                   ))}

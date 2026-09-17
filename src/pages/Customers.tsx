@@ -16,9 +16,11 @@ import {
 } from "lucide-react";
 import { useCustomerStore, type Customer } from "@/stores/customer-store";
 import { useSalesStore } from "@/stores/sales-store";
+import { money } from "@/lib/currency";
+import { fmtDate } from "@/lib/format-date";
 
 const fmt = (n: number) =>
-  `$${n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  money(n);
 
 const emptyForm = {
   name: "",
@@ -230,7 +232,7 @@ const Customers = () => {
                       </Badge>
                     </TableCell>
                     <TableCell className="text-xs text-muted-foreground">
-                      {c.joinDate.toLocaleDateString()}
+                      {fmtDate(c.joinDate)}
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-1" onClick={(e) => e.stopPropagation()}>
@@ -269,7 +271,7 @@ const Customers = () => {
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
                 <Label>Phone *</Label>
-                <Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} placeholder="+1 555..." />
+                <Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} placeholder="+880 17..." />
               </div>
               <div className="space-y-1.5">
                 <Label>Email</Label>
@@ -357,7 +359,7 @@ const Customers = () => {
                           <div className="flex items-center justify-between">
                             <div>
                               <p className="text-xs font-medium">{s.invoiceNo}</p>
-                              <p className="text-[10px] text-muted-foreground">{s.date.toLocaleDateString()} · {s.items.length} items</p>
+                              <p className="text-[10px] text-muted-foreground">{fmtDate(s.date)} · {s.items.length} items</p>
                             </div>
                             <p className="font-heading font-bold text-sm">{fmt(s.total)}</p>
                           </div>
@@ -387,7 +389,7 @@ const Customers = () => {
                       <div key={p.id} className="flex items-center justify-between border-b border-border py-2 last:border-0">
                         <div>
                           <p className="text-xs font-medium capitalize">{p.method.replace("_", " ")}</p>
-                          <p className="text-[10px] text-muted-foreground">{p.date.toLocaleDateString()} · {p.note}</p>
+                          <p className="text-[10px] text-muted-foreground">{fmtDate(p.date)} · {p.note}</p>
                         </div>
                         <p className="text-sm font-bold text-emerald-600">{fmt(p.amount)}</p>
                       </div>
@@ -399,7 +401,7 @@ const Customers = () => {
               {/* Info */}
               <div className="mt-6 space-y-2 text-sm">
                 <p><span className="text-muted-foreground">Address:</span> {liveDetail.address || "—"}</p>
-                <p><span className="text-muted-foreground">Joined:</span> {liveDetail.joinDate.toLocaleDateString()}</p>
+                <p><span className="text-muted-foreground">Joined:</span> {fmtDate(liveDetail.joinDate)}</p>
                 {liveDetail.notes && (
                   <p><span className="text-muted-foreground">Notes:</span> {liveDetail.notes}</p>
                 )}

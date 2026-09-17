@@ -32,13 +32,13 @@ export const ROLES: Role[] = [
 ];
 
 const initialEmployees: Employee[] = [
-  { id: "1", name: "Dr. Ahmed Khan", email: "ahmed@medicore.com", phone: "+1 555 100 0001", role: "Super Admin", branch: "Main Branch", salary: 8500, joinDate: "2023-01-15", status: "active" },
-  { id: "2", name: "Sara Ali", email: "sara@medicore.com", phone: "+1 555 100 0002", role: "Pharmacist", branch: "Main Branch", salary: 5200, joinDate: "2023-03-20", status: "active" },
-  { id: "3", name: "Omar Hassan", email: "omar@medicore.com", phone: "+1 555 100 0003", role: "Sales Staff", branch: "Main Branch", salary: 3200, joinDate: "2023-06-10", status: "active" },
-  { id: "4", name: "Fatima Noor", email: "fatima@medicore.com", phone: "+1 555 100 0004", role: "Branch Admin", branch: "North Wing Pharmacy", salary: 6000, joinDate: "2023-08-01", status: "active" },
-  { id: "5", name: "Yusuf Iqbal", email: "yusuf@medicore.com", phone: "+1 555 100 0005", role: "Pharmacist", branch: "North Wing Pharmacy", salary: 5000, joinDate: "2024-01-12", status: "active" },
-  { id: "6", name: "Lina Saeed", email: "lina@medicore.com", phone: "+1 555 100 0006", role: "Accountant", branch: "Main Branch", salary: 4500, joinDate: "2024-02-20", status: "active" },
-  { id: "7", name: "Tariq Mahmoud", email: "tariq@medicore.com", phone: "+1 555 100 0007", role: "Sales Staff", branch: "City Center Outlet", salary: 3000, joinDate: "2024-05-15", status: "inactive" },
+  { id: "1", name: "Dr. Anwar Hossain", email: "anwar@medicore.com.bd", phone: "+880 1811-000001", role: "Super Admin", branch: "Dhanmondi Main Branch", salary: 120000, joinDate: "2023-01-15", status: "active" },
+  { id: "2", name: "Sumaiya Akter", email: "sumaiya@medicore.com.bd", phone: "+880 1811-000002", role: "Pharmacist", branch: "Dhanmondi Main Branch", salary: 38000, joinDate: "2023-03-20", status: "active" },
+  { id: "3", name: "Rakib Hasan", email: "rakib@medicore.com.bd", phone: "+880 1811-000003", role: "Sales Staff", branch: "Dhanmondi Main Branch", salary: 18000, joinDate: "2023-06-10", status: "active" },
+  { id: "4", name: "Nusrat Ferdous", email: "nusrat@medicore.com.bd", phone: "+880 1811-000004", role: "Branch Admin", branch: "Uttara Branch", salary: 55000, joinDate: "2023-08-01", status: "active" },
+  { id: "5", name: "Imran Kabir", email: "imran@medicore.com.bd", phone: "+880 1811-000005", role: "Pharmacist", branch: "Uttara Branch", salary: 34000, joinDate: "2024-01-12", status: "active" },
+  { id: "6", name: "Tanvir Ahmed", email: "tanvir@medicore.com.bd", phone: "+880 1811-000006", role: "Accountant", branch: "Dhanmondi Main Branch", salary: 42000, joinDate: "2024-02-20", status: "active" },
+  { id: "7", name: "Sabbir Rahman", email: "sabbir@medicore.com.bd", phone: "+880 1811-000007", role: "Sales Staff", branch: "Chattogram Outlet", salary: 16000, joinDate: "2024-05-15", status: "inactive" },
 ];
 
 function pad(n: number) {

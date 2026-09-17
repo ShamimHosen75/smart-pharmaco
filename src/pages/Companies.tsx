@@ -41,6 +41,7 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { useCompanyStore, type Company } from "@/stores/company-store";
+import { money } from "@/lib/currency";
 
 type FormData = {
   name: string;
@@ -63,7 +64,7 @@ const emptyForm: FormData = {
 };
 
 const fmt = (n: number) =>
-  n.toLocaleString("en-US", { style: "currency", currency: "USD", minimumFractionDigits: 0 });
+  money(n, 0);
 
 const Companies = () => {
   const { companies, addCompany, updateCompany, deleteCompany, toggleStatus } =
@@ -471,7 +472,7 @@ const Companies = () => {
               <div className="space-y-2">
                 <Label>Phone *</Label>
                 <Input
-                  placeholder="+1 555-0100"
+                  placeholder="+880 1711-000100"
                   value={form.phone}
                   onChange={(e) => set("phone", e.target.value)}
                   maxLength={20}

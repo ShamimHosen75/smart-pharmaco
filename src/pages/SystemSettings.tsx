@@ -166,7 +166,9 @@ const SystemSettings = () => {
                     <Select value={globalSettings.currency} onValueChange={(v) => setGlobalSettings({ ...globalSettings, currency: v as typeof globalSettings.currency })}>
                       <SelectTrigger><SelectValue /></SelectTrigger>
                       <SelectContent>
+                        <SelectItem value="BDT">BDT (৳)</SelectItem>
                         <SelectItem value="USD">USD ($)</SelectItem>
+                        <SelectItem value="INR">INR (₹)</SelectItem>
                         <SelectItem value="EUR">EUR (€)</SelectItem>
                         <SelectItem value="GBP">GBP (£)</SelectItem>
                         <SelectItem value="SAR">SAR (﷼)</SelectItem>
@@ -197,6 +199,7 @@ const SystemSettings = () => {
                     <Select value={globalSettings.timezone} onValueChange={(v) => setGlobalSettings({ ...globalSettings, timezone: v })}>
                       <SelectTrigger><SelectValue /></SelectTrigger>
                       <SelectContent>
+                        <SelectItem value="Asia/Dhaka">Asia/Dhaka (UTC+6)</SelectItem>
                         <SelectItem value="UTC">UTC</SelectItem>
                         <SelectItem value="EST">EST (UTC-5)</SelectItem>
                         <SelectItem value="PST">PST (UTC-8)</SelectItem>
@@ -210,8 +213,8 @@ const SystemSettings = () => {
                     <Select value={globalSettings.dateFormat} onValueChange={(v) => setGlobalSettings({ ...globalSettings, dateFormat: v })}>
                       <SelectTrigger><SelectValue /></SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="MM/DD/YYYY">MM/DD/YYYY</SelectItem>
                         <SelectItem value="DD/MM/YYYY">DD/MM/YYYY</SelectItem>
+                        <SelectItem value="MM/DD/YYYY">MM/DD/YYYY</SelectItem>
                         <SelectItem value="YYYY-MM-DD">YYYY-MM-DD</SelectItem>
                       </SelectContent>
                     </Select>
@@ -222,6 +225,7 @@ const SystemSettings = () => {
                       <SelectTrigger><SelectValue /></SelectTrigger>
                       <SelectContent>
                         <SelectItem value="en">English</SelectItem>
+                        <SelectItem value="bn">বাংলা (Bangla)</SelectItem>
                         <SelectItem value="ar">Arabic</SelectItem>
                         <SelectItem value="fr">French</SelectItem>
                         <SelectItem value="es">Spanish</SelectItem>
@@ -381,11 +385,11 @@ const SystemSettings = () => {
                 {marketing.loyaltyEnabled && (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
                     <div className="space-y-1.5">
-                      <Label>Points per $1 spent</Label>
+                      <Label>Points per ৳100 spent</Label>
                       <Input type="number" value={marketing.pointsPerDollar} onChange={(e) => setMarketing({ ...marketing, pointsPerDollar: e.target.value })} />
                     </div>
                     <div className="space-y-1.5">
-                      <Label>Points for $1 redemption</Label>
+                      <Label>Points for ৳1 redemption</Label>
                       <Input type="number" value={marketing.redemptionRate} onChange={(e) => setMarketing({ ...marketing, redemptionRate: e.target.value })} />
                     </div>
                   </div>

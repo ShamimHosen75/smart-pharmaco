@@ -44,6 +44,7 @@ import {
   useMedicineStore,
 } from "@/stores/medicine-store";
 import { useCompanyStore } from "@/stores/company-store";
+import { money } from "@/lib/currency";
 
 const statusVariant = (s: MedicineStatus): "default" | "secondary" | "destructive" | "outline" => {
   switch (s) {
@@ -165,7 +166,7 @@ const Medicines = () => {
         <StatCard icon={<Package className="h-5 w-5" />} label="Total Items" value={String(stats.total)} tone="default" />
         <StatCard icon={<AlertTriangle className="h-5 w-5" />} label="Low / Out of Stock" value={String(stats.lowStock)} tone="warning" />
         <StatCard icon={<Clock className="h-5 w-5" />} label="Expiring / Expired" value={String(stats.expiring)} tone="destructive" />
-        <StatCard icon={<DollarSign className="h-5 w-5" />} label="Inventory Value" value={`$${stats.value.toFixed(2)}`} tone="default" />
+        <StatCard icon={<DollarSign className="h-5 w-5" />} label="Inventory Value" value={`${money(stats.value)}`} tone="default" />
       </div>
 
       {/* Filters */}
@@ -237,7 +238,7 @@ const Medicines = () => {
                     <td className="px-4 py-3 font-mono text-xs">{med.batch}</td>
                     <td className="px-4 py-3">{med.expiry}</td>
                     <td className="px-4 py-3">{med.stock}</td>
-                    <td className="px-4 py-3 font-medium">${med.price.toFixed(2)}</td>
+                    <td className="px-4 py-3 font-medium">{money(med.price)}</td>
                     <td className="px-4 py-3">
                       <Badge variant={statusVariant(med._status)}>{med._status}</Badge>
                     </td>
@@ -372,10 +373,10 @@ const Medicines = () => {
               <DetailRow label="Expiry" value={viewing.expiry} />
               <DetailRow label="Stock" value={`${viewing.stock} units`} />
               <DetailRow label="Low-stock threshold" value={String(viewing.lowStockThreshold)} />
-              <DetailRow label="Purchase price" value={`$${viewing.purchasePrice.toFixed(2)}`} />
-              <DetailRow label="Selling price" value={`$${viewing.price.toFixed(2)}`} />
+              <DetailRow label="Purchase price" value={`${money(viewing.purchasePrice)}`} />
+              <DetailRow label="Selling price" value={`${money(viewing.price)}`} />
               <DetailRow label="Discount" value={`${viewing.discount}%`} />
-              <DetailRow label="Inventory value" value={`$${(viewing.stock * viewing.purchasePrice).toFixed(2)}`} />
+              <DetailRow label="Inventory value" value={`${money((viewing.stock * viewing.purchasePrice))}`} />
               <div className="pt-2">
                 <Badge variant={statusVariant(getMedicineStatus(viewing))}>
                   {getMedicineStatus(viewing)}
