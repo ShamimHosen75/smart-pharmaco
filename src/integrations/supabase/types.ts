@@ -56,6 +56,27 @@ export type Database = {
         }
         Relationships: []
       }
+      staff_branch_assignments: {
+        Row: {
+          branch_name: string
+          created_at: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          branch_name: string
+          created_at?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          branch_name?: string
+          created_at?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       staff_invitations: {
         Row: {
           branch: string
