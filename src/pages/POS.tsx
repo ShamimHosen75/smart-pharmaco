@@ -238,6 +238,7 @@ const POS = () => {
           </Select>
         </div>
       </div>
+      {!currentBranch && <p className="mb-4 text-sm text-destructive">No active assigned branch is available for sales.</p>}
 
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 h-[calc(100%-4rem)]">
         {/* Product Grid */}
