@@ -52,7 +52,7 @@ const colors = [
   { name: "Cyan", value: "185 80% 50%" }, { name: "Rose", value: "350 70% 55%" },
 ];
 function Field({ label, children, hint }: { label: string; children: ReactNode; hint?: string }) {
-  return <div className="min-w-0 space-y-1.5"><Label className="text-[11px] font-bold uppercase text-foreground">{label}</Label>{children}{hint && <p className="text-xs text-muted-foreground">{hint}</p>}</div>;
+  return <div role="group" aria-label={label} className="min-w-0 space-y-1.5"><Label className="text-[11px] font-bold uppercase text-foreground">{label}</Label>{children}{hint && <p className="text-xs text-muted-foreground">{hint}</p>}</div>;
 }
 function Row({ label, hint, children }: { label: string; hint?: string; children: ReactNode }) {
   return <div className="flex min-h-12 items-center justify-between gap-4 rounded-md border border-border px-3 py-2.5"><div className="min-w-0"><p className="text-sm font-medium">{label}</p>{hint && <p className="text-xs text-muted-foreground">{hint}</p>}</div>{children}</div>;

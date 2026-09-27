@@ -134,5 +134,5 @@ export const useSettingsStore = create<SettingsStore>()(persist((set) => ({
   setTheme: (data) => set((s) => ({ theme: { ...s.theme, ...data } })),
   setMarketing: (data) => set((s) => ({ marketing: { ...s.marketing, ...data } })),
   setProfile: (data) => set((s) => ({ profile: { ...s.profile, ...data } })),
-}),+  { name: "medicore-settings", partialize: (state) => ({ profile: state.profile, storeInfo: state.storeInfo, global: state.global, theme: state.theme, marketing: state.marketing }) }
+}), { name: "medicore-settings", partialize: (state) => ({ profile: state.profile, storeInfo: state.storeInfo, global: state.global, theme: state.theme, marketing: state.marketing }) }
 ));
