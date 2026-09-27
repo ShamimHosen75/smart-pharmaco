@@ -10,10 +10,10 @@ const cors = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 const permissions = {
-  sales_staff: ["Sales and checkout", "Returns and receipts", "Customer records", "Own profile"],
-  pharmacist: ["Sales and checkout", "Returns and receipts", "Medicine inventory and alerts", "Customer records", "Own profile"],
-  accountant: ["Purchases", "Receipts", "Accounting", "Reports", "Own profile"],
-  branch_admin: ["Branch operations and staff accounts", "Inventory and purchasing", "Sales and customers", "Reports", "Own profile"],
+  sales_staff: ["Dashboard", "POS", "Returns", "Receipts", "Customers", "Own settings"],
+  pharmacist: ["Dashboard", "POS", "Returns", "Receipts", "Medicines", "Alerts", "Customers", "Own settings"],
+  accountant: ["Dashboard", "Receipts", "Purchases", "Accounting", "Reports", "Own settings"],
+  branch_admin: ["Dashboard", "POS", "Returns", "Receipts", "Medicines", "Companies", "Purchases", "Alerts", "Customers", "Employees", "Reports", "Branches", "Staff accounts and settings"],
 } as const;
 type RecommendedRole = keyof typeof permissions;
 const roles = Object.keys(permissions) as RecommendedRole[];
@@ -22,7 +22,7 @@ const schema = z.object({
   rationale: z.string(),
   gaps: z.array(z.string()),
 });
-const json = (body: unknown, status: number, headers: HeadersInit = cors) => new Response(JSON.stringify(body), { status, headers: { ...headers, "Content-Type": "application/json" } });
+const json = (body: unknown, status: number, init: HeadersInit = cors) => { const headers = new Headers(init); headers.set("Content-Type", "application/json"); return new Response(JSON.stringify(body), { status, headers }); };
 
 Deno.serve(async (request) => {
   if (request.method === "OPTIONS") return new Response(null, { headers: cors });
