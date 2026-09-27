@@ -18,6 +18,7 @@ export interface SaleRecord {
 
 export interface RefundRecord {
   id: string;
+  branchId?: string;
   refundNo: string;
   originalInvoiceNo: string;
   date: Date;

@@ -19,6 +19,7 @@ import {
 import { toast } from "@/hooks/use-toast";
 import { useSalesStore, type SaleRecord } from "@/stores/sales-store";
 import { useBranchStore } from "@/stores/branch-store";
+import { useAssignedBranches } from "@/hooks/use-assigned-branches";
 import { printInvoice, downloadInvoice, downloadInvoicePDF, type InvoiceData } from "@/lib/invoice-printer";
 import { exportSalesCSV, exportSalesPDF } from "@/lib/report-export";
 import { money } from "@/lib/currency";
@@ -41,10 +42,9 @@ function toInvoiceData(sale: SaleRecord): InvoiceData {
 
 const Receipts = () => {
   const sales = useSalesStore((s) => s.sales);
-  const branches = useBranchStore((s) => s.branches);
-  const currentBranchId = useBranchStore((s) => s.currentBranchId);
+   const { branches, branchIds } = useAssignedBranches();
 
-  const [branchFilter, setBranchFilter] = useState<string>(currentBranchId || "all");
+   const [branchFilter, setBranchFilter] = useState<string>("all");
   const [search, setSearch] = useState("");
   const [fromDate, setFromDate] = useState<string>("");
   const [toDate, setToDate] = useState<string>("");
@@ -64,6 +64,7 @@ const Receipts = () => {
     return [...sales]
       .sort((a, b) => b.date.getTime() - a.date.getTime())
       .filter((s) => {
+        if (!s.branchId || !branchIds.has(s.branchId)) return false;
         if (branchFilter !== "all") {
           if (s.branchId !== branchFilter) return false;
         }
@@ -77,7 +78,7 @@ const Receipts = () => {
           s.customerPhone.toLowerCase().includes(q)
         );
       });
-  }, [sales, branchFilter, search, fromDate, toDate]);
+   }, [sales, branchIds, branchFilter, search, fromDate, toDate]);
 
   const last = filtered[0];
   const branchName = (id?: string) =>

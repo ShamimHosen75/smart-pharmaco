@@ -22,6 +22,7 @@ import { printInvoice, downloadInvoicePDF, generateInvoiceNo, type InvoiceData }
 import { useSalesStore } from "@/stores/sales-store";
 import { useMedicineStore, getMedicineStatus } from "@/stores/medicine-store";
 import { useBranchStore } from "@/stores/branch-store";
+import { useAssignedBranches } from "@/hooks/use-assigned-branches";
 import { useCustomerStore } from "@/stores/customer-store";
 import { money, vatPercent, vatRate } from "@/lib/currency";
 import { fmtDate, fmtDateLong, fmtTime } from "@/lib/format-date";
@@ -42,6 +43,7 @@ const POS = () => {
   const adjustStock = useMedicineStore((s) => s.adjustStock);
   const addSale = useSalesStore((s) => s.addSale);
   const branches = useBranchStore((s) => s.branches);
+  const { branches: assignedBranches } = useAssignedBranches();
   const currentBranchId = useBranchStore((s) => s.currentBranchId);
   const setCurrentBranch = useBranchStore((s) => s.setCurrentBranch);
   const customers = useCustomerStore((s) => s.customers);
@@ -58,9 +60,9 @@ const POS = () => {
   const [showInvoiceDialog, setShowInvoiceDialog] = useState(false);
   const [lastInvoice, setLastInvoice] = useState<InvoiceData | null>(null);
 
-  const activeBranches = branches.filter((b) => b.status === "active");
+  const activeBranches = assignedBranches.filter((b) => b.status === "active");
   const currentBranch =
-    branches.find((b) => b.id === currentBranchId) ?? activeBranches[0];
+    activeBranches.find((b) => b.id === currentBranchId) ?? activeBranches[0];
 
   const filteredMeds = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -144,7 +146,7 @@ const POS = () => {
   };
 
   const completeSale = () => {
-    if (cart.length === 0) return;
+    if (cart.length === 0 || !currentBranch) return;
     const invoiceNo = generateInvoiceNo();
     const now = new Date();
     const items = cart.map((c) => ({
@@ -164,7 +166,7 @@ const POS = () => {
       id: crypto.randomUUID(),
       invoiceNo,
       date: now,
-      branchId: currentBranch?.id,
+       branchId: currentBranch.id,
       customerId,
       customerName,
       customerPhone,
@@ -223,7 +225,7 @@ const POS = () => {
         </div>
         <div className="flex items-center gap-2">
           <Store className="h-4 w-4 text-muted-foreground" />
-          <Select value={currentBranchId} onValueChange={setCurrentBranch}>
+           <Select value={currentBranch?.id} onValueChange={setCurrentBranch}>
             <SelectTrigger className="w-[220px]">
               <SelectValue placeholder="Select branch" />
             </SelectTrigger>
