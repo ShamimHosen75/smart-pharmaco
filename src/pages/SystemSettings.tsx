@@ -1,447 +1,136 @@
+import { useMemo, useRef, useState, type ReactNode } from "react";
+import { Link } from "react-router-dom";
 import { useSettingsStore } from "@/stores/settings-store";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useSubscriptionStore } from "@/stores/subscription-store";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { Slider } from "@/components/ui/slider";
-import { Badge } from "@/components/ui/badge";
-import {
-  Store, Globe, Palette, Megaphone, Check,
-} from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { cn } from "@/lib/utils";
+import {
+  Activity, Bell, Building2, Check, ChevronRight, CreditCard, Download, Globe,
+  KeyRound, Link2, LockKeyhole, Megaphone, MessageCircle, Package, Palette,
+  Plug, Receipt, Search, Settings2, ShieldCheck, ShoppingCart, Store,
+  UploadCloud, UserRound, Users, Workflow, X, type LucideIcon,
+} from "lucide-react";
 
-const ACCENT_PRESETS = [
-  { label: "Coral", value: "12 76% 61%" },
-  { label: "Blue", value: "217 91% 50%" },
-  { label: "Emerald", value: "160 60% 45%" },
-  { label: "Purple", value: "270 60% 55%" },
-  { label: "Amber", value: "38 92% 50%" },
-  { label: "Pink", value: "330 80% 60%" },
-  { label: "Cyan", value: "185 80% 50%" },
-  { label: "Rose", value: "350 70% 55%" },
-  { label: "Green", value: "142 76% 36%" },
+type Section = "profile" | "account" | "security" | "subscription" | "store" | "items" | "receipt" | "appearance" | "notifications" | "social" | "campaigns" | "metaAds" | "metaLeads" | "whatsapp" | "automations" | "integrations" | "pixels" | "api";
+const groups: { label: string; items: { id: Section; label: string; icon: LucideIcon }[] }[] = [
+  { label: "Account", items: [{ id: "profile", label: "Profile", icon: UserRound }, { id: "account", label: "Account", icon: Users }, { id: "security", label: "Security", icon: ShieldCheck }] },
+  { label: "Billing", items: [{ id: "subscription", label: "Subscription", icon: CreditCard }] },
+  { label: "Workspace", items: [{ id: "store", label: "POS & Store", icon: Store }, { id: "items", label: "Menu Items", icon: Package }, { id: "receipt", label: "Receipt", icon: Receipt }, { id: "appearance", label: "Appearance", icon: Palette }, { id: "notifications", label: "Notifications", icon: Bell }] },
+  { label: "Marketing", items: [{ id: "social", label: "Social Overview", icon: Activity }, { id: "campaigns", label: "Campaigns", icon: Megaphone }, { id: "metaAds", label: "Meta Ads", icon: Megaphone }, { id: "metaLeads", label: "Meta Leads", icon: Users }, { id: "whatsapp", label: "WhatsApp", icon: MessageCircle }, { id: "automations", label: "Automations", icon: Workflow }] },
+  { label: "Integrations", items: [{ id: "integrations", label: "Integrations", icon: Plug }, { id: "pixels", label: "Meta Pixels & Datasets", icon: Activity }, { id: "api", label: "API & Webhooks", icon: KeyRound }] },
 ];
-
-const RADIUS_OPTIONS = [
-  { label: "Sharp", value: 0 },
-  { label: "Subtle", value: 0.25 },
-  { label: "Default", value: 0.5 },
-  { label: "Rounded", value: 0.75 },
-  { label: "Pill", value: 1.25 },
+const titles: Record<Section, { title: string; description: string; icon: LucideIcon }> = {
+  profile: { title: "Profile details", description: "Manage your personal details and profile picture.", icon: UserRound },
+  account: { title: "Account settings", description: "Currency, tax and regional preferences.", icon: Globe },
+  security: { title: "Security", description: "Account access and protection.", icon: ShieldCheck },
+  subscription: { title: "Subscription", description: "Your plans and billing workspace.", icon: CreditCard },
+  store: { title: "POS & Store", description: "Pharmacy identity and sales preferences.", icon: Store },
+  items: { title: "Menu Items", description: "Manage medicines and inventory.", icon: Package },
+  receipt: { title: "Receipt", description: "Printed invoice and receipt details.", icon: Receipt },
+  appearance: { title: "Appearance", description: "Personalize the workspace colors and corners.", icon: Palette },
+  notifications: { title: "Notifications", description: "Choose the alerts you want to receive.", icon: Bell },
+  social: { title: "Social Overview", description: "Your pharmacy's customer engagement preferences.", icon: Activity },
+  campaigns: { title: "Campaigns", description: "Loyalty and promotion settings.", icon: Megaphone },
+  metaAds: { title: "Meta Ads", description: "Advertising connection.", icon: Megaphone },
+  metaLeads: { title: "Meta Leads", description: "Lead capture connection.", icon: Users },
+  whatsapp: { title: "WhatsApp", description: "Messaging connection.", icon: MessageCircle },
+  automations: { title: "Automations", description: "Workflow connections.", icon: Workflow },
+  integrations: { title: "Integrations", description: "Connected services.", icon: Plug },
+  pixels: { title: "Meta Pixels & Datasets", description: "Tracking connection.", icon: Activity },
+  api: { title: "API & Webhooks", description: "Developer access.", icon: KeyRound },
+};
+const colors = [
+  { name: "Blue", value: "217 91% 50%" }, { name: "Green", value: "160 60% 45%" },
+  { name: "Coral", value: "12 76% 61%" }, { name: "Amber", value: "38 92% 50%" },
+  { name: "Cyan", value: "185 80% 50%" }, { name: "Rose", value: "350 70% 55%" },
 ];
-
-function hslToHex(hslStr: string): string {
-  const parts = hslStr.split(" ").map((s) => parseFloat(s));
-  if (parts.length < 3) return "#000000";
-  const [h, s, l] = parts;
-  const sN = s / 100;
-  const lN = l / 100;
-  const a = sN * Math.min(lN, 1 - lN);
-  const f = (n: number) => {
-    const k = (n + h / 30) % 12;
-    const color = lN - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
-    return Math.round(255 * color).toString(16).padStart(2, "0");
-  };
-  return `#${f(0)}${f(8)}${f(4)}`;
+function Field({ label, children, hint }: { label: string; children: ReactNode; hint?: string }) {
+  return <div className="min-w-0 space-y-1.5"><Label className="text-[11px] font-bold uppercase text-foreground">{label}</Label>{children}{hint && <p className="text-xs text-muted-foreground">{hint}</p>}</div>;
+}
+function Row({ label, hint, children }: { label: string; hint?: string; children: ReactNode }) {
+  return <div className="flex min-h-12 items-center justify-between gap-4 rounded-md border border-border px-3 py-2.5"><div className="min-w-0"><p className="text-sm font-medium">{label}</p>{hint && <p className="text-xs text-muted-foreground">{hint}</p>}</div>{children}</div>;
+}
+function Block({ title, description, children }: { title: string; description?: string; children: ReactNode }) {
+  return <section className="grid gap-4 border-b border-border py-5 last:border-b-0 sm:grid-cols-[160px_minmax(0,1fr)] lg:grid-cols-[180px_minmax(0,1fr)]">
+    <div><h3 className="text-sm font-semibold">{title}</h3>{description && <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{description}</p>}</div>
+    <div className="min-w-0 space-y-3">{children}</div>
+  </section>;
+}
+function Unavailable({ subject }: { subject: string }) {
+  return <Block title="Connection status" description="Online features are not yet connected.">
+    <div className="flex items-start gap-3 rounded-md border border-border bg-muted/40 p-4"><LockKeyhole className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground"/><div><p className="text-sm font-medium">{subject} is not connected</p><p className="mt-1 text-xs leading-relaxed text-muted-foreground">This workspace currently stores its settings on this device. An online account and service connection are needed before this feature can work.</p></div></div>
+  </Block>;
 }
 
-const ColorField = ({
-  label,
-  description,
-  value,
-  onChange,
-}: {
-  label: string;
-  description: string;
-  value: string;
-  onChange: (v: string) => void;
-}) => (
-  <div className="space-y-1.5">
-    <Label className="text-sm font-medium">{label}</Label>
-    <div className="flex items-center gap-2">
-      <div
-        className="h-10 w-10 rounded-lg border border-border shrink-0"
-        style={{ backgroundColor: `hsl(${value})` }}
-      />
-      <Input value={hslToHex(value)} readOnly className="font-mono text-sm" />
-    </div>
-    <p className="text-[11px] text-muted-foreground">{description}</p>
-  </div>
-);
-
-const SystemSettings = () => {
-  const storeInfo = useSettingsStore((s) => s.storeInfo);
-  const setStoreInfoStore = useSettingsStore((s) => s.setStoreInfo);
-  const globalSettings = useSettingsStore((s) => s.global);
-  const setGlobalStore = useSettingsStore((s) => s.setGlobal);
+export default function SystemSettings() {
+  const [active, setActive] = useState<Section>("profile");
+  const [search, setSearch] = useState("");
+  const fileRef = useRef<HTMLInputElement>(null);
+  const profile = useSettingsStore((s) => s.profile);
+  const setProfile = useSettingsStore((s) => s.setProfile);
+  const store = useSettingsStore((s) => s.storeInfo);
+  const setStore = useSettingsStore((s) => s.setStoreInfo);
+  const global = useSettingsStore((s) => s.global);
+  const setGlobal = useSettingsStore((s) => s.setGlobal);
   const theme = useSettingsStore((s) => s.theme);
-  const setThemeStore = useSettingsStore((s) => s.setTheme);
+  const setTheme = useSettingsStore((s) => s.setTheme);
   const marketing = useSettingsStore((s) => s.marketing);
-  const setMarketingStore = useSettingsStore((s) => s.setMarketing);
-
-  // Adapters so existing { ...obj, field: v } onChange handlers keep working
-  const setStoreInfo = (data: typeof storeInfo) => setStoreInfoStore(data);
-  const setGlobalSettings = (data: typeof globalSettings) => setGlobalStore(data);
-  const setTheme = (data: typeof theme) => setThemeStore(data);
-  const setMarketing = (data: typeof marketing) => setMarketingStore(data);
-
-  const handleSave = (section: string) => {
-    toast({ title: `${section} saved`, description: "Settings updated successfully." });
+  const setMarketing = useSettingsStore((s) => s.setMarketing);
+  const plans = useSubscriptionStore((s) => s.plans);
+  const tenants = useSubscriptionStore((s) => s.tenants);
+  const filtered = useMemo(() => groups.map((group) => ({ ...group, items: group.items.filter((item) => item.label.toLowerCase().includes(search.toLowerCase().trim())) })).filter((group) => group.items.length), [search]);
+  const section = titles[active];
+  const Icon = section.icon;
+  const exportConfig = () => {
+    const data = { profile: { ...profile, avatar: undefined }, storeInfo: store, global, theme, marketing };
+    const url = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: "application/json" }));
+    const a = document.createElement("a"); a.href = url; a.download = "medicore-settings.json"; a.click(); URL.revokeObjectURL(url);
   };
+  const uploadAvatar = (file?: File) => {
+    if (!file) return;
+    if (!["image/png", "image/jpeg", "image/svg+xml"].includes(file.type) || file.size > 1024 * 1024) {
+      toast({ title: "Choose an SVG, JPG or PNG under 1 MB", variant: "destructive" }); return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => { if (typeof reader.result === "string") setProfile({ avatar: reader.result }); };
+    reader.readAsDataURL(file);
+  };
+  const saved = () => toast({ title: "Settings saved on this device" });
+  const link = (to: string, text: string) => <Button asChild variant="outline" size="sm"><Link to={to}>{text}<ChevronRight /></Link></Button>;
 
-  return (
-    <div className="space-y-6 animate-fade-in">
-      <div>
-        <h1 className="text-2xl font-heading font-bold">Settings</h1>
-        <p className="text-sm text-muted-foreground">Manage store configuration and preferences</p>
+  return <div className="animate-fade-in min-h-full rounded-md border border-border bg-card p-4 sm:p-5">
+    <div className="mb-4 flex flex-wrap items-start justify-between gap-3"><div><h1 className="text-xl font-bold font-heading">Settings</h1><p className="text-xs text-muted-foreground">Everything about your pharmacy, workspace and growth tools.</p></div><Button variant="outline" size="sm" onClick={exportConfig}><Download /> Export config</Button></div>
+    <div className="grid min-h-[680px] overflow-hidden rounded-md border border-border md:grid-cols-[190px_minmax(0,1fr)] lg:grid-cols-[210px_minmax(0,1fr)]">
+      <aside className="border-b border-border p-2.5 md:border-b-0 md:border-r"><div className="relative mb-3"><Search className="pointer-events-none absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground"/><Input aria-label="Search settings" placeholder="Search settings..." value={search} onChange={(e) => setSearch(e.target.value)} className="h-9 pl-8 text-xs" /></div>
+        <nav aria-label="Settings sections" className="space-y-3">{filtered.length ? filtered.map((group) => <div key={group.label}><p className="px-2 pb-1 text-[10px] font-bold uppercase text-muted-foreground">{group.label}</p><div className="space-y-0.5">{group.items.map((item) => <Button key={item.id} variant="ghost" size="sm" onClick={() => setActive(item.id)} aria-current={active === item.id ? "page" : undefined} className={cn("h-8 w-full justify-start gap-2 px-2 text-xs font-normal", active === item.id && "bg-primary/10 font-medium text-primary hover:bg-primary/10 hover:text-primary")}><item.icon className="h-3.5 w-3.5"/>{item.label}{active === item.id && <ChevronRight className="ml-auto h-3 w-3"/>}</Button>)}</div></div>) : <p className="px-2 text-xs text-muted-foreground">No matching settings</p>}</nav>
+      </aside>
+      <div className="min-w-0"><div className="flex items-center gap-3 border-b border-border px-4 py-3 sm:px-5"><span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary"><Icon className="h-4 w-4"/></span><div><h2 className="text-sm font-semibold">{section.title}</h2><p className="text-xs text-muted-foreground">{section.description}</p></div></div>
+        <div className="px-4 sm:px-5">
+          {active === "profile" && <>
+            <Block title="Public profile" description="Your display information for this workspace."><Field label="Display name"><Input value={profile.displayName} onChange={(e) => setProfile({ displayName: e.target.value })} /></Field><Row label="Public profile" hint="Preference only; a public link needs an online account."><Switch aria-label="Public profile" checked={profile.publicProfile} onCheckedChange={(v) => setProfile({ publicProfile: v })}/></Row></Block>
+            <Block title="Profile picture" description="Shown on your settings profile."><div className="flex items-center gap-3"><div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-full bg-primary text-lg font-bold text-primary-foreground">{profile.avatar ? <img src={profile.avatar} alt="Your profile" className="h-full w-full object-cover"/> : (profile.displayName || "M").charAt(0).toUpperCase()}</div><div className="flex-1"><input ref={fileRef} type="file" accept="image/svg+xml,image/png,image/jpeg" className="hidden" onChange={(e) => { uploadAvatar(e.target.files?.[0]); e.target.value = ""; }}/><Button variant="outline" className="h-20 w-full border-dashed" onClick={() => fileRef.current?.click()}><UploadCloud/> Click to upload <span className="hidden sm:inline">or drag & drop</span></Button><p className="mt-1 text-center text-[11px] text-muted-foreground">SVG, JPG or PNG (1 MB each)</p></div>{profile.avatar && <Button title="Remove picture" aria-label="Remove picture" size="icon" variant="ghost" onClick={() => setProfile({ avatar: "" })}><X/></Button>}</div><Row label="Use avatar on printed receipts" hint="Saved as a preference; current receipts print the pharmacy identity only."><Switch aria-label="Use avatar on printed receipts" checked={profile.printAvatar} onCheckedChange={(v) => setProfile({ printAvatar: v })}/></Row></Block>
+            <Block title="Personal details" description="Your name, role and contact for internal records."><div className="grid gap-3 sm:grid-cols-2"><Field label="Full name"><Input value={profile.fullName} onChange={(e) => setProfile({ fullName: e.target.value })}/></Field><Field label="Job title"><Input value={profile.jobTitle} onChange={(e) => setProfile({ jobTitle: e.target.value })}/></Field><Field label="Phone"><Input type="tel" value={profile.phone} onChange={(e) => setProfile({ phone: e.target.value })}/></Field><Field label="Interface language"><Select value={global.language} onValueChange={(v) => setGlobal({ language: v })}><SelectTrigger><SelectValue/></SelectTrigger><SelectContent><SelectItem value="en">English</SelectItem><SelectItem value="bn">বাংলা (Bangla)</SelectItem><SelectItem value="ar">Arabic</SelectItem><SelectItem value="fr">French</SelectItem><SelectItem value="es">Spanish</SelectItem></SelectContent></Select></Field></div><Field label="Bio"><Textarea maxLength={300} value={profile.bio} onChange={(e) => setProfile({ bio: e.target.value })} rows={3}/><p className="text-right text-[11px] text-muted-foreground">{profile.bio.length}/300</p></Field><Button onClick={saved}><Check/> Save changes</Button></Block>
+          </>}
+          {active === "account" && <><Block title="Tax & currency" description="Used for prices and invoices."><div className="grid gap-3 sm:grid-cols-3"><Field label="Currency"><Select value={global.currency} onValueChange={(v) => setGlobal({ currency: v as typeof global.currency })}><SelectTrigger><SelectValue/></SelectTrigger><SelectContent>{[["BDT", "BDT (৳)"], ["USD", "USD ($)"], ["INR", "INR (₹)"], ["EUR", "EUR (€)"], ["GBP", "GBP (£)"], ["SAR", "SAR (﷼)"], ["AED", "AED (د.إ)"]].map(([v, name]) => <SelectItem key={v} value={v}>{name}</SelectItem>)}</SelectContent></Select></Field><Field label="VAT %"><Input type="number" min="0" max="100" value={global.vat} onChange={(e) => setGlobal({ vat: e.target.value })}/></Field><Field label="Tax ID"><Input value={global.taxId} onChange={(e) => setGlobal({ taxId: e.target.value })}/></Field></div></Block><Block title="Regional" description="Local formats for your workspace."><div className="grid gap-3 sm:grid-cols-2"><Field label="Timezone"><Select value={global.timezone} onValueChange={(v) => setGlobal({ timezone: v })}><SelectTrigger><SelectValue/></SelectTrigger><SelectContent>{["Asia/Dhaka", "UTC", "EST", "PST", "GST", "IST"].map((v) => <SelectItem key={v} value={v}>{v}</SelectItem>)}</SelectContent></Select></Field><Field label="Date format"><Select value={global.dateFormat} onValueChange={(v) => setGlobal({ dateFormat: v })}><SelectTrigger><SelectValue/></SelectTrigger><SelectContent>{["DD/MM/YYYY", "MM/DD/YYYY", "YYYY-MM-DD"].map((v) => <SelectItem key={v} value={v}>{v}</SelectItem>)}</SelectContent></Select></Field></div></Block></>}
+          {active === "security" && <Unavailable subject="Password and sign-in settings"/>}
+          {active === "subscription" && <Block title="Plans & billing" description="Manage your SaaS plans and tenant subscriptions."><p className="text-sm">{plans.length} plans · {tenants.length} tenants</p>{link("/subscriptions", "Open subscriptions")}<p className="text-xs text-muted-foreground">Payment status here is recorded manually; live payments are not connected.</p></Block>}
+          {active === "store" && <><Block title="Pharmacy details" description="Shown on invoices and receipts."><div className="grid gap-3 sm:grid-cols-2"><Field label="Pharmacy name"><Input value={store.name} onChange={(e) => setStore({ name: e.target.value })}/></Field><Field label="Phone"><Input value={store.phone} onChange={(e) => setStore({ phone: e.target.value })}/></Field><Field label="Email"><Input type="email" value={store.email} onChange={(e) => setStore({ email: e.target.value })}/></Field><Field label="License no."><Input value={store.license} onChange={(e) => setStore({ license: e.target.value })}/></Field></div><Field label="Address"><Input value={store.address} onChange={(e) => setStore({ address: e.target.value })}/></Field></Block><Block title="Branches" description="Manage locations and their contacts.">{link("/branches", "Manage branches")}</Block></>}
+          {active === "items" && <Block title="Medicines" description="Catalog, pricing and stock are managed in inventory.">{link("/medicines", "Open medicines")}</Block>}
+          {active === "receipt" && <><Block title="Receipt message" description="Printed at the bottom of your invoice."><Field label="Footer message"><Textarea rows={3} value={global.receiptFooter} onChange={(e) => setGlobal({ receiptFooter: e.target.value })}/></Field></Block><Block title="Receipt history" description="Find, reprint and export your past sales.">{link("/receipts", "Open receipts")}</Block></>}
+          {active === "appearance" && <><Block title="Brand color" description="Applied to buttons and highlights across the workspace."><div className="flex flex-wrap gap-3">{colors.map((color) => <Button key={color.name} variant="ghost" size="icon" title={color.name} aria-label={color.name} aria-pressed={theme.accent === color.value} className={cn("h-9 w-9 rounded-full p-1", theme.accent === color.value && "ring-2 ring-ring ring-offset-2")} onClick={() => setTheme({ accent: color.value })}><span className="h-full w-full rounded-full" style={{ backgroundColor: `hsl(${color.value})` }}/></Button>)}</div></Block><Block title="Corner style" description="Adjust the interface shape."><div className="flex items-center gap-4"><Slider value={[theme.radius]} min={0} max={1} step={0.05} onValueChange={([v]) => setTheme({ radius: v })}/><span className="w-14 text-right text-xs text-muted-foreground">{theme.radius.toFixed(2)}rem</span></div></Block></>}
+          {active === "notifications" && <Block title="Pharmacy alerts" description="Turn alerts on or off."><Row label="Low stock alerts" hint="When medicine stock falls below its threshold"><Switch checked={global.lowStockAlert} onCheckedChange={(v) => setGlobal({ lowStockAlert: v })}/></Row><Row label="Expiry alerts" hint="For medicines approaching expiry"><Switch checked={global.expiryAlert} onCheckedChange={(v) => setGlobal({ expiryAlert: v })}/></Row><Row label="Email notifications" hint="Preference only; email delivery is not connected"><Switch checked={global.emailNotifications} onCheckedChange={(v) => setGlobal({ emailNotifications: v })}/></Row></Block>}
+          {active === "social" && <Block title="Customer engagement" description="Loyalty and promotions for your pharmacy.">{link("/customers", "Open customers")}<Button variant="outline" size="sm" onClick={() => setActive("campaigns")}>Campaign settings<ChevronRight/></Button></Block>}
+          {active === "campaigns" && <><Block title="Loyalty program" description="Reward customers for their purchases."><Row label="Enable loyalty program" hint="Customers earn points on purchases"><Switch checked={marketing.loyaltyEnabled} onCheckedChange={(v) => setMarketing({ loyaltyEnabled: v })}/></Row>{marketing.loyaltyEnabled && <div className="grid gap-3 sm:grid-cols-2"><Field label="Points per ৳100 spent"><Input type="number" min="0" value={marketing.pointsPerDollar} onChange={(e) => setMarketing({ pointsPerDollar: e.target.value })}/></Field><Field label="Points for ৳1 redemption"><Input type="number" min="0" value={marketing.redemptionRate} onChange={(e) => setMarketing({ redemptionRate: e.target.value })}/></Field></div>}</Block><Block title="Promotions" description="Offers and campaign preferences."><Field label="Welcome discount (%)"><Input type="number" min="0" max="100" value={marketing.welcomeDiscount} onChange={(e) => setMarketing({ welcomeDiscount: e.target.value })}/></Field><Field label="Promotional message"><Textarea value={marketing.promoMessage} onChange={(e) => setMarketing({ promoMessage: e.target.value })}/></Field><Row label="SMS campaigns" hint="Preference only; sending is not connected"><Switch checked={marketing.smsEnabled} onCheckedChange={(v) => setMarketing({ smsEnabled: v })}/></Row><Row label="Email campaigns" hint="Preference only; sending is not connected"><Switch checked={marketing.emailCampaigns} onCheckedChange={(v) => setMarketing({ emailCampaigns: v })}/></Row></Block></>}
+          {(["metaAds", "metaLeads", "whatsapp", "automations", "integrations", "pixels", "api"] as Section[]).includes(active) && <Unavailable subject={section.title}/>}
+        </div>
       </div>
-
-      <Tabs defaultValue="store" className="space-y-6">
-        <TabsList className="w-full max-w-2xl grid grid-cols-4">
-          <TabsTrigger value="store" className="gap-1.5">
-            <Store className="h-4 w-4" /> Store Info
-          </TabsTrigger>
-          <TabsTrigger value="global" className="gap-1.5">
-            <Globe className="h-4 w-4" /> Global Settings
-          </TabsTrigger>
-          <TabsTrigger value="theme" className="gap-1.5">
-            <Palette className="h-4 w-4" /> Theme
-          </TabsTrigger>
-          <TabsTrigger value="marketing" className="gap-1.5">
-            <Megaphone className="h-4 w-4" /> Marketing
-          </TabsTrigger>
-        </TabsList>
-
-        {/* STORE INFO */}
-        <TabsContent value="store">
-          <Card className="border-none shadow-sm max-w-3xl">
-            <CardHeader>
-              <CardTitle className="text-base font-heading">Pharmacy Information</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <Label>Pharmacy Name</Label>
-                  <Input value={storeInfo.name} onChange={(e) => setStoreInfo({ ...storeInfo, name: e.target.value })} />
-                </div>
-                <div className="space-y-1.5">
-                  <Label>Phone</Label>
-                  <Input value={storeInfo.phone} onChange={(e) => setStoreInfo({ ...storeInfo, phone: e.target.value })} />
-                </div>
-              </div>
-              <div className="space-y-1.5">
-                <Label>Address</Label>
-                <Input value={storeInfo.address} onChange={(e) => setStoreInfo({ ...storeInfo, address: e.target.value })} />
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <Label>Email</Label>
-                  <Input value={storeInfo.email} onChange={(e) => setStoreInfo({ ...storeInfo, email: e.target.value })} />
-                </div>
-                <div className="space-y-1.5">
-                  <Label>License No.</Label>
-                  <Input value={storeInfo.license} onChange={(e) => setStoreInfo({ ...storeInfo, license: e.target.value })} />
-                </div>
-              </div>
-              <Button onClick={() => handleSave("Store Info")}>Save Changes</Button>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* GLOBAL SETTINGS */}
-        <TabsContent value="global">
-          <div className="space-y-4 max-w-3xl">
-            <Card className="border-none shadow-sm">
-              <CardHeader>
-                <CardTitle className="text-base font-heading">Tax & Currency</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="space-y-1.5">
-                    <Label>Currency</Label>
-                    <Select value={globalSettings.currency} onValueChange={(v) => setGlobalSettings({ ...globalSettings, currency: v as typeof globalSettings.currency })}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="BDT">BDT (৳)</SelectItem>
-                        <SelectItem value="USD">USD ($)</SelectItem>
-                        <SelectItem value="INR">INR (₹)</SelectItem>
-                        <SelectItem value="EUR">EUR (€)</SelectItem>
-                        <SelectItem value="GBP">GBP (£)</SelectItem>
-                        <SelectItem value="SAR">SAR (﷼)</SelectItem>
-                        <SelectItem value="AED">AED (د.إ)</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label>VAT %</Label>
-                    <Input type="number" value={globalSettings.vat} onChange={(e) => setGlobalSettings({ ...globalSettings, vat: e.target.value })} />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label>Tax ID</Label>
-                    <Input value={globalSettings.taxId} onChange={(e) => setGlobalSettings({ ...globalSettings, taxId: e.target.value })} />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="border-none shadow-sm">
-              <CardHeader>
-                <CardTitle className="text-base font-heading">Regional</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="space-y-1.5">
-                    <Label>Timezone</Label>
-                    <Select value={globalSettings.timezone} onValueChange={(v) => setGlobalSettings({ ...globalSettings, timezone: v })}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Asia/Dhaka">Asia/Dhaka (UTC+6)</SelectItem>
-                        <SelectItem value="UTC">UTC</SelectItem>
-                        <SelectItem value="EST">EST (UTC-5)</SelectItem>
-                        <SelectItem value="PST">PST (UTC-8)</SelectItem>
-                        <SelectItem value="GST">GST (UTC+4)</SelectItem>
-                        <SelectItem value="IST">IST (UTC+5:30)</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label>Date Format</Label>
-                    <Select value={globalSettings.dateFormat} onValueChange={(v) => setGlobalSettings({ ...globalSettings, dateFormat: v })}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="DD/MM/YYYY">DD/MM/YYYY</SelectItem>
-                        <SelectItem value="MM/DD/YYYY">MM/DD/YYYY</SelectItem>
-                        <SelectItem value="YYYY-MM-DD">YYYY-MM-DD</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label>Language</Label>
-                    <Select value={globalSettings.language} onValueChange={(v) => setGlobalSettings({ ...globalSettings, language: v })}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="en">English</SelectItem>
-                        <SelectItem value="bn">বাংলা (Bangla)</SelectItem>
-                        <SelectItem value="ar">Arabic</SelectItem>
-                        <SelectItem value="fr">French</SelectItem>
-                        <SelectItem value="es">Spanish</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="border-none shadow-sm">
-              <CardHeader>
-                <CardTitle className="text-base font-heading">Notifications</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium">Low Stock Alerts</p>
-                    <p className="text-xs text-muted-foreground">Get notified when stock falls below threshold</p>
-                  </div>
-                  <Switch checked={globalSettings.lowStockAlert} onCheckedChange={(v) => setGlobalSettings({ ...globalSettings, lowStockAlert: v })} />
-                </div>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium">Expiry Alerts</p>
-                    <p className="text-xs text-muted-foreground">Alert before medicines expire</p>
-                  </div>
-                  <Switch checked={globalSettings.expiryAlert} onCheckedChange={(v) => setGlobalSettings({ ...globalSettings, expiryAlert: v })} />
-                </div>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium">Email Notifications</p>
-                    <p className="text-xs text-muted-foreground">Receive daily summary reports via email</p>
-                  </div>
-                  <Switch checked={globalSettings.emailNotifications} onCheckedChange={(v) => setGlobalSettings({ ...globalSettings, emailNotifications: v })} />
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="border-none shadow-sm">
-              <CardHeader>
-                <CardTitle className="text-base font-heading">Receipt</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-1.5">
-                  <Label>Receipt Footer Message</Label>
-                  <Textarea value={globalSettings.receiptFooter} onChange={(e) => setGlobalSettings({ ...globalSettings, receiptFooter: e.target.value })} rows={2} />
-                </div>
-                <Button onClick={() => handleSave("Global Settings")}>Save Changes</Button>
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
-
-        {/* THEME */}
-        <TabsContent value="theme">
-          <div className="space-y-6 max-w-4xl">
-            <Card className="border-none shadow-sm">
-              <CardHeader>
-                <CardTitle className="text-base font-heading flex items-center gap-2">
-                  <Palette className="h-4 w-4" /> Brand Colors
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <ColorField label="Accent / CTA" description="Buttons, links, badges" value={theme.accent} onChange={(v) => setTheme({ ...theme, accent: v })} />
-                  <ColorField label="Primary" description="Header, headings, text" value={theme.primary} onChange={(v) => setTheme({ ...theme, primary: v })} />
-                  <ColorField label="Secondary" description="Secondary surfaces" value={theme.secondary} onChange={(v) => setTheme({ ...theme, secondary: v })} />
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <ColorField label="Background" description="Page background" value={theme.background} onChange={(v) => setTheme({ ...theme, background: v })} />
-                  <ColorField label="Text" description="Main text color" value={theme.foreground} onChange={(v) => setTheme({ ...theme, foreground: v })} />
-                  <ColorField label="Muted Text" description="Secondary text" value={theme.muted} onChange={(v) => setTheme({ ...theme, muted: v })} />
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <ColorField label="Border" description="Borders, dividers" value={theme.border} onChange={(v) => setTheme({ ...theme, border: v })} />
-                  <ColorField label="Card / Surface" description="Cards, modals, popups" value={theme.card} onChange={(v) => setTheme({ ...theme, card: v })} />
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="border-none shadow-sm">
-              <CardHeader>
-                <CardTitle className="text-base font-heading">Border Radius</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center gap-4">
-                  <div className="flex-1">
-                    <Slider
-                      value={[theme.radius]}
-                      onValueChange={([v]) => setTheme({ ...theme, radius: v })}
-                      min={0}
-                      max={1.5}
-                      step={0.05}
-                    />
-                  </div>
-                  <span className="text-sm font-mono w-16 text-right">{theme.radius.toFixed(2)}rem</span>
-                </div>
-                <div className="flex gap-2">
-                  {RADIUS_OPTIONS.map((opt) => (
-                    <Button
-                      key={opt.label}
-                      size="sm"
-                      variant={Math.abs(theme.radius - opt.value) < 0.05 ? "default" : "outline"}
-                      onClick={() => setTheme({ ...theme, radius: opt.value })}
-                    >
-                      {opt.label}
-                    </Button>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="border-none shadow-sm">
-              <CardHeader>
-                <CardTitle className="text-base font-heading">Quick Accent Presets</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex flex-wrap gap-3">
-                  {ACCENT_PRESETS.map((preset) => (
-                    <button
-                      key={preset.label}
-                      className={`h-11 w-11 rounded-xl border-2 transition-all ${
-                        theme.accent === preset.value
-                          ? "border-foreground scale-110 shadow-md"
-                          : "border-transparent hover:scale-105"
-                      }`}
-                      style={{ backgroundColor: `hsl(${preset.value})` }}
-                      onClick={() => setTheme({ ...theme, accent: preset.value })}
-                      title={preset.label}
-                    />
-                  ))}
-                </div>
-                <div className="mt-4">
-                  <Button onClick={() => handleSave("Theme")}>Save Theme</Button>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
-
-        {/* MARKETING */}
-        <TabsContent value="marketing">
-          <div className="space-y-4 max-w-3xl">
-            <Card className="border-none shadow-sm">
-              <CardHeader>
-                <CardTitle className="text-base font-heading">Loyalty Program</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium">Enable Loyalty Program</p>
-                    <p className="text-xs text-muted-foreground">Customers earn points on purchases</p>
-                  </div>
-                  <Switch checked={marketing.loyaltyEnabled} onCheckedChange={(v) => setMarketing({ ...marketing, loyaltyEnabled: v })} />
-                </div>
-                {marketing.loyaltyEnabled && (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
-                    <div className="space-y-1.5">
-                      <Label>Points per ৳100 spent</Label>
-                      <Input type="number" value={marketing.pointsPerDollar} onChange={(e) => setMarketing({ ...marketing, pointsPerDollar: e.target.value })} />
-                    </div>
-                    <div className="space-y-1.5">
-                      <Label>Points for ৳1 redemption</Label>
-                      <Input type="number" value={marketing.redemptionRate} onChange={(e) => setMarketing({ ...marketing, redemptionRate: e.target.value })} />
-                    </div>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            <Card className="border-none shadow-sm">
-              <CardHeader>
-                <CardTitle className="text-base font-heading">Promotions</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-1.5">
-                  <Label>Welcome Discount (%)</Label>
-                  <Input type="number" value={marketing.welcomeDiscount} onChange={(e) => setMarketing({ ...marketing, welcomeDiscount: e.target.value })} />
-                  <p className="text-xs text-muted-foreground">Discount applied to first-time customer purchases</p>
-                </div>
-                <div className="space-y-1.5">
-                  <Label>Promotional Message</Label>
-                  <Textarea value={marketing.promoMessage} onChange={(e) => setMarketing({ ...marketing, promoMessage: e.target.value })} rows={2} />
-                  <p className="text-xs text-muted-foreground">Displayed on receipts and customer-facing screens</p>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="border-none shadow-sm">
-              <CardHeader>
-                <CardTitle className="text-base font-heading">Channels</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium">SMS Campaigns</p>
-                    <p className="text-xs text-muted-foreground">Send promotions via SMS</p>
-                  </div>
-                  <Switch checked={marketing.smsEnabled} onCheckedChange={(v) => setMarketing({ ...marketing, smsEnabled: v })} />
-                </div>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium">Email Campaigns</p>
-                    <p className="text-xs text-muted-foreground">Send promotions via email</p>
-                  </div>
-                  <Switch checked={marketing.emailCampaigns} onCheckedChange={(v) => setMarketing({ ...marketing, emailCampaigns: v })} />
-                </div>
-                <Button onClick={() => handleSave("Marketing")}>Save Changes</Button>
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
-      </Tabs>
     </div>
-  );
-};
-
-export default SystemSettings;
+  </div>;
+}

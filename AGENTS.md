@@ -1,0 +1,3 @@
+- Keep settings in the existing Zustand settings store, persisted to browser storage; this preserves local pharmacy preferences across reloads until a connected backend exists.
+- Group settings in one searchable sidebar rather than separate routes; the reference design uses a single settings workspace and existing module links lead to operational pages.
+- Treat external services, security, and public profiles as unconnected until real hosted integrations exist; a local switch must not imply a live service.

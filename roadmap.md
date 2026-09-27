@@ -1,0 +1,3 @@
+- [x] Rebuild settings navigation and profile layout to match the supplied reference.
+- [x] Place existing pharmacy controls into grouped settings sections and preserve local edits.
+- [ ] Verify layout and interactions on desktop and mobile.
