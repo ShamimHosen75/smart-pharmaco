@@ -14,16 +14,135 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      profiles: {
+        Row: {
+          avatar_url: string
+          bio: string
+          branch: string
+          created_at: string
+          display_name: string
+          full_name: string
+          id: string
+          is_active: boolean
+          job_title: string
+          phone: string
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string
+          bio?: string
+          branch?: string
+          created_at?: string
+          display_name?: string
+          full_name?: string
+          id: string
+          is_active?: boolean
+          job_title?: string
+          phone?: string
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string
+          bio?: string
+          branch?: string
+          created_at?: string
+          display_name?: string
+          full_name?: string
+          id?: string
+          is_active?: boolean
+          job_title?: string
+          phone?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      staff_invitations: {
+        Row: {
+          branch: string
+          claimed_by: string | null
+          created_at: string
+          email: string
+          full_name: string
+          id: string
+          role: Database["public"]["Enums"]["staff_role"]
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          branch?: string
+          claimed_by?: string | null
+          created_at?: string
+          email: string
+          full_name: string
+          id?: string
+          role: Database["public"]["Enums"]["staff_role"]
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          branch?: string
+          claimed_by?: string | null
+          created_at?: string
+          email?: string
+          full_name?: string
+          id?: string
+          role?: Database["public"]["Enums"]["staff_role"]
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["staff_role"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["staff_role"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["staff_role"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      claim_staff_account: { Args: never; Returns: boolean }
+      has_staff_access: { Args: { _user: string }; Returns: boolean }
+      is_staff_admin: { Args: { _user: string }; Returns: boolean }
+      manage_staff_invitation: {
+        Args: {
+          _branch: string
+          _email: string
+          _id: string
+          _name: string
+          _role: Database["public"]["Enums"]["staff_role"]
+          _status: string
+        }
+        Returns: undefined
+      }
     }
     Enums: {
-      [_ in never]: never
+      staff_role:
+        | "super_admin"
+        | "branch_admin"
+        | "pharmacist"
+        | "sales_staff"
+        | "accountant"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +269,14 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      staff_role: [
+        "super_admin",
+        "branch_admin",
+        "pharmacist",
+        "sales_staff",
+        "accountant",
+      ],
+    },
   },
 } as const
