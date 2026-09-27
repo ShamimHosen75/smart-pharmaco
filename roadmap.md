@@ -1,3 +1,4 @@
-- [x] Rebuild settings navigation and profile layout to match the supplied reference.
-- [x] Place existing pharmacy controls into grouped settings sections and preserve local edits.
-- [x] Verify layout and interactions on desktop and mobile.
+- [x] Enable managed sign-in and create secure staff profiles, roles, and first owner invitation.
+- [ ] Add sign-in and account activation, protected routes, role-aware navigation and profile editing.
+- [ ] Add administrator staff account invitations, role and status controls in Settings.
+- [ ] Verify permissions, sign-in states, desktop/mobile screens, and latest build.
