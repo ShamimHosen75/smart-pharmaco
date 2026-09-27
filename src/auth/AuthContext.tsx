@@ -33,7 +33,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     void refresh();
     const { data: { subscription } } = supabase.auth.onAuthStateChange(() => { setTimeout(() => void refresh(), 0); });
-    return () => { subscription.unsubscribe(); loadSequence++; };
+    const onFocus = () => { if (document.visibilityState === "visible") void refresh(); };
+    document.addEventListener("visibilitychange", onFocus);
+    return () => { subscription.unsubscribe(); document.removeEventListener("visibilitychange", onFocus); loadSequence++; };
   }, []);
   const signOut = async () => { await supabase.auth.signOut(); setProfile(null); setRole(null); setUser(null); };
   return <AuthContext.Provider value={{ user, profile, role, loading, refresh, signOut }}>{children}</AuthContext.Provider>;

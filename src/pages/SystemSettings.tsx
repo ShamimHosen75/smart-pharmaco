@@ -2,7 +2,7 @@ import { useMemo, useRef, useState, type ReactNode } from "react";
 import { useAuth, roleName } from "@/auth/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import StaffAccounts from "@/components/StaffAccounts";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { useSettingsStore } from "@/stores/settings-store";
 import { useSubscriptionStore } from "@/stores/subscription-store";
 import { Button } from "@/components/ui/button";
@@ -74,7 +74,8 @@ function Unavailable({ subject }: { subject: string }) {
 }
 
 export default function SystemSettings() {
-  const [active, setActive] = useState<Section>("profile");
+  const [params] = useSearchParams();
+  const [active, setActive] = useState<Section>(params.get("section") === "staff" ? "staff" : "profile");
   const [search, setSearch] = useState("");
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);

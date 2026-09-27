@@ -156,7 +156,7 @@ const Employees = () => {
           <h1 className="text-2xl font-heading font-bold">Employees</h1>
           <p className="text-sm text-muted-foreground">Local payroll and attendance records. Staff sign-in and access are managed separately.</p>
         </div>
-        <div className="flex flex-wrap gap-2"><Button asChild variant="outline"><Link to="/settings">Staff account access</Link></Button><Button onClick={openAdd}><Plus className="mr-2 h-4 w-4" />Add payroll record</Button></div>
+        <div className="flex flex-wrap gap-2"><Button asChild variant="outline"><Link to="/settings?section=staff">Staff account access</Link></Button><Button onClick={openAdd}><Plus className="mr-2 h-4 w-4" />Add payroll record</Button></div>
       </div>
 
       {/* Stats */}
