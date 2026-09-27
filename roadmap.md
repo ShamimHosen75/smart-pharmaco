@@ -2,3 +2,4 @@
 - [x] Add sign-in and account activation, protected routes, role-aware navigation and profile editing.
 - [x] Add administrator staff account invitations, role, branch and status controls in Settings.
 - [ ] Verify authenticated staff management end-to-end — blocked until the invited owner activates their account.
+- [ ] Add admin-only AI recommendations for least-privilege staff access, with review before any role assignment.
