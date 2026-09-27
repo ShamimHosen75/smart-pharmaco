@@ -434,7 +434,7 @@ const POS = () => {
               ))}
             </div>
 
-            <Button className="w-full mt-3" size="lg" disabled={cart.length === 0} onClick={completeSale}>
+            <Button className="w-full mt-3" size="lg" disabled={cart.length === 0 || !currentBranch} onClick={completeSale}>
               Complete Sale — {money(total)}
             </Button>
           </CardContent>

@@ -20,10 +20,12 @@ import {
 } from "@/components/ui/select";
 import { Package, Plus, Search, Edit, Trash2, Eye, X, DollarSign, ShoppingCart, Clock } from "lucide-react";
 import { usePurchaseStore, type PurchaseItem } from "@/stores/purchase-store";
+import { useAssignedBranches } from "@/hooks/use-assigned-branches";
 import { useCompanyStore } from "@/stores/company-store";
 import { money } from "@/lib/currency";
 
 type FormData = {
+  branchId: string;
   companyId: string;
   date: string;
   discount: string;
@@ -31,7 +33,7 @@ type FormData = {
   status: "received" | "pending" | "cancelled";
 };
 
-const emptyForm: FormData = { companyId: "", date: "", discount: "0", notes: "", status: "pending" };
+const emptyForm: FormData = { branchId: "", companyId: "", date: "", discount: "0", notes: "", status: "pending" };
 const emptyItem: PurchaseItem = { medicineName: "", batchNo: "", qty: 0, unitCost: 0, expiryDate: "" };
 
 const statusVariant = (s: string) => {
@@ -42,6 +44,8 @@ const statusVariant = (s: string) => {
 
 const Purchases = () => {
   const { purchases, addPurchase, updatePurchase, deletePurchase } = usePurchaseStore();
+  const { branches, branchIds } = useAssignedBranches();
+  const visiblePurchases = useMemo(() => purchases.filter((p) => branchIds.has(p.branchId)), [purchases, branchIds]);
   const { companies, updateCompany } = useCompanyStore();
   const activeCompanies = companies.filter((c) => c.status === "active");
 
@@ -56,19 +60,19 @@ const Purchases = () => {
 
   const filtered = useMemo(
     () =>
-      purchases.filter(
+      visiblePurchases.filter(
         (p) =>
           p.purchaseNo.toLowerCase().includes(search.toLowerCase()) ||
           p.companyName.toLowerCase().includes(search.toLowerCase())
       ),
-    [purchases, search]
+    [visiblePurchases, search]
   );
 
-  const totalValue = purchases.reduce((s, p) => s + p.total, 0);
-  const receivedCount = purchases.filter((p) => p.status === "received").length;
-  const pendingCount = purchases.filter((p) => p.status === "pending").length;
+  const totalValue = visiblePurchases.reduce((s, p) => s + p.total, 0);
+  const receivedCount = visiblePurchases.filter((p) => p.status === "received").length;
+  const pendingCount = visiblePurchases.filter((p) => p.status === "pending").length;
 
-  const viewPurchase = viewId ? purchases.find((p) => p.id === viewId) : null;
+  const viewPurchase = viewId ? visiblePurchases.find((p) => p.id === viewId) : null;
 
   const set_ = (k: keyof FormData, v: string) => setForm((f) => ({ ...f, [k]: v }));
 
@@ -80,17 +84,17 @@ const Purchases = () => {
 
   const openAdd = () => {
     setEditId(null);
-    setForm(emptyForm);
+    setForm({ ...emptyForm, branchId: branches.find((b) => b.status === "active")?.id ?? "" });
     setItems([{ ...emptyItem }]);
     setErrors({});
     setDialogOpen(true);
   };
 
   const openEdit = (id: string) => {
-    const p = purchases.find((x) => x.id === id);
+    const p = visiblePurchases.find((x) => x.id === id);
     if (!p) return;
     setEditId(id);
-    setForm({ companyId: p.companyId, date: p.date, discount: String(p.discount), notes: p.notes, status: p.status });
+    setForm({ branchId: p.branchId, companyId: p.companyId, date: p.date, discount: String(p.discount), notes: p.notes, status: p.status });
     setItems(p.items.map((i) => ({ ...i })));
     setErrors({});
     setDialogOpen(true);
@@ -98,6 +102,7 @@ const Purchases = () => {
 
   const validate = () => {
     const e: Record<string, string> = {};
+    if (!branchIds.has(form.branchId)) e.branchId = "Choose an assigned branch";
     if (!form.companyId) e.companyId = "Required";
     if (!form.date) e.date = "Required";
     if (items.length === 0) e.items = "Add at least one item";
@@ -118,6 +123,7 @@ const Purchases = () => {
     const total = subtotal - discount;
 
     const payload = {
+      branchId: form.branchId,
       companyId: form.companyId,
       companyName: company?.name || "",
       date: form.date,
@@ -161,7 +167,7 @@ const Purchases = () => {
         <Card className="border-none shadow-sm">
           <CardContent className="p-4 flex items-center gap-3">
             <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center"><ShoppingCart className="h-5 w-5 text-primary" /></div>
-            <div><p className="text-xs text-muted-foreground">Total Orders</p><p className="text-xl font-heading font-bold">{purchases.length}</p></div>
+          <div><p className="text-xs text-muted-foreground">Total Orders</p><p className="text-xl font-heading font-bold">{visiblePurchases.length}</p></div>
           </CardContent>
         </Card>
         <Card className="border-none shadow-sm">
@@ -299,6 +305,7 @@ const Purchases = () => {
             <DialogTitle className="font-heading">{editId ? "Edit Purchase" : "New Purchase Order"}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-2">
+            <div className="space-y-2"><Label>Branch *</Label><Select value={form.branchId} onValueChange={(v) => set_("branchId", v)}><SelectTrigger className={errors.branchId ? "border-destructive" : ""}><SelectValue placeholder="Select branch" /></SelectTrigger><SelectContent>{branches.filter((b) => b.status === "active").map((b) => <SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>)}</SelectContent></Select>{errors.branchId && <p className="text-xs text-destructive">{errors.branchId}</p>}</div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Supplier Company *</Label>
