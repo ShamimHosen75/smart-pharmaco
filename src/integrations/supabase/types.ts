@@ -156,6 +156,11 @@ export type Database = {
         }
         Returns: undefined
       }
+      staff_can_manage_branch: { Args: { _branch: string }; Returns: boolean }
+      staff_has_other_branch: {
+        Args: { _branch: string; _user: string }
+        Returns: boolean
+      }
     }
     Enums: {
       staff_role:
