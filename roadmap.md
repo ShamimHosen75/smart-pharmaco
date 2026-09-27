@@ -1,4 +1,4 @@
 - [x] Enable managed sign-in and create secure staff profiles, roles, and first owner invitation.
-- [ ] Add sign-in and account activation, protected routes, role-aware navigation and profile editing.
-- [ ] Add administrator staff account invitations, role and status controls in Settings.
-- [ ] Verify permissions, sign-in states, desktop/mobile screens, and latest build.
+- [x] Add sign-in and account activation, protected routes, role-aware navigation and profile editing.
+- [x] Add administrator staff account invitations, role, branch and status controls in Settings.
+- [ ] Verify authenticated staff management end-to-end — blocked until the invited owner activates their account.
