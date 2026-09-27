@@ -35,6 +35,8 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { useBranchStore, type Branch } from "@/stores/branch-store";
+import { useAssignedBranches } from "@/hooks/use-assigned-branches";
+import { useAuth } from "@/auth/AuthContext";
 
 const emptyForm: {
   name: string;
@@ -55,8 +57,11 @@ const emptyForm: {
 };
 
 const Branches = () => {
-  const { branches, addBranch, updateBranch, deleteBranch, toggleStatus } =
+  const { branches: allBranches, addBranch, updateBranch, deleteBranch, toggleStatus } =
     useBranchStore();
+  const { branches: assignedBranches } = useAssignedBranches();
+  const { role } = useAuth();
+  const branches = role === "super_admin" ? allBranches : assignedBranches;
 
   const [search, setSearch] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -94,6 +99,7 @@ const Branches = () => {
   };
 
   const openAdd = () => {
+    if (role !== "super_admin") return;
     setEditId(null);
     setForm(emptyForm);
     setErrors({});
@@ -101,6 +107,7 @@ const Branches = () => {
   };
 
   const openEdit = (b: Branch) => {
+    if (role !== "super_admin") return;
     setEditId(b.id);
     setForm({
       name: b.name,
@@ -116,6 +123,7 @@ const Branches = () => {
   };
 
   const save = () => {
+    if (role !== "super_admin") return;
     if (!validate()) return;
     const data = { ...form, status: form.status as "active" | "inactive" };
     if (editId) {
@@ -143,10 +151,10 @@ const Branches = () => {
             Manage multi-branch operations
           </p>
         </div>
-        <Button onClick={openAdd}>
+        {role === "super_admin" && <Button onClick={openAdd}>
           <Plus className="mr-2 h-4 w-4" />
           Add Branch
-        </Button>
+        </Button>}
       </div>
 
       {/* Stats */}
@@ -297,8 +305,8 @@ const Branches = () => {
                         variant={
                           b.status === "active" ? "default" : "secondary"
                         }
-                        className="cursor-pointer"
-                        onClick={() => toggleStatus(b.id)}
+                         className={role === "super_admin" ? "cursor-pointer" : ""}
+                         onClick={() => { if (role === "super_admin") toggleStatus(b.id); }}
                       >
                         {b.status === "active" ? "Active" : "Inactive"}
                       </Badge>
@@ -307,7 +315,7 @@ const Branches = () => {
                       {b.createdAt}
                     </td>
                     <td className="px-4 py-3">
-                      <div className="flex gap-1">
+                      {role === "super_admin" && <div className="flex gap-1">
                         <button
                           onClick={() => openEdit(b)}
                           className="rounded p-1.5 hover:bg-muted transition-colors"
@@ -320,7 +328,7 @@ const Branches = () => {
                         >
                           <Trash2 className="h-3.5 w-3.5 text-destructive" />
                         </button>
-                      </div>
+                      </div>}
                     </td>
                   </tr>
                 ))}
