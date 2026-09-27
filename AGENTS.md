@@ -5,3 +5,4 @@
 - Gate existing client-side operational pages by verified Cloud roles, while keeping their demo data distinct from secured staff records; route guards alone do not provide persisted tenant/branch isolation.
 
 - Keep AI staff-access suggestions on an admin-verified Edge Function; model output is advisory and mapped to existing server-approved roles only, so text cannot grant privileges.
+- Keep staff branch assignments in Cloud with administrator policies; operational records remain browser-local demo data, so client branch filtering is presentation only and never tenant isolation.

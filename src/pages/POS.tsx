@@ -42,7 +42,6 @@ const POS = () => {
   const medicines = useMedicineStore((s) => s.medicines);
   const adjustStock = useMedicineStore((s) => s.adjustStock);
   const addSale = useSalesStore((s) => s.addSale);
-  const branches = useBranchStore((s) => s.branches);
   const { branches: assignedBranches } = useAssignedBranches();
   const currentBranchId = useBranchStore((s) => s.currentBranchId);
   const setCurrentBranch = useBranchStore((s) => s.setCurrentBranch);

@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { useAuth } from "@/auth/AuthContext";
 import { useBranchStore } from "@/stores/branch-store";
 
@@ -5,7 +6,8 @@ import { useBranchStore } from "@/stores/branch-store";
 export function useAssignedBranches() {
   const { assignedBranches } = useAuth();
   const branches = useBranchStore((s) => s.branches);
-  const allowed = branches.filter((branch) => assignedBranches.includes(branch.name));
-  const ids = new Set(allowed.map((branch) => branch.id));
-  return { branches: allowed, branchIds: ids };
+  return useMemo(() => {
+    const allowed = branches.filter((branch) => assignedBranches.includes(branch.name));
+    return { branches: allowed, branchIds: new Set(allowed.map((branch) => branch.id)) };
+  }, [branches, assignedBranches]);
 }

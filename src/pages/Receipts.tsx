@@ -18,7 +18,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { toast } from "@/hooks/use-toast";
 import { useSalesStore, type SaleRecord } from "@/stores/sales-store";
-import { useBranchStore } from "@/stores/branch-store";
 import { useAssignedBranches } from "@/hooks/use-assigned-branches";
 import { printInvoice, downloadInvoice, downloadInvoicePDF, type InvoiceData } from "@/lib/invoice-printer";
 import { exportSalesCSV, exportSalesPDF } from "@/lib/report-export";

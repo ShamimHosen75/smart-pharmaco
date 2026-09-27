@@ -24,7 +24,6 @@ export default function StaffAccounts() {
   const [name, setName] = useState("");
   const [assignedRole, setAssignedRole] = useState<StaffRole>("sales_staff");
   const [branch, setBranch] = useState("");
-  const [extraBranches, setExtraBranches] = useState<string[]>([]);
   const allowed: StaffRole[] = role === "super_admin" ? ["super_admin", "branch_admin", "pharmacist", "sales_staff", "accountant"] : ["branch_admin", "pharmacist", "sales_staff", "accountant"];
   const available = branches.filter((b) => b.status === "active" && (role === "super_admin" || assignedBranches.includes(b.name)));
   const primary = available.some((b) => b.name === branch) ? branch : available[0]?.name;
@@ -47,7 +46,7 @@ export default function StaffAccounts() {
     if (error) toast({ title: error.message, variant: "destructive" });
     else {
       // Additional locations can be assigned after the staff member activates their account.
-      setEmail(""); setName(""); setExtraBranches([]);
+      setEmail(""); setName("");
       toast({ title: "Staff invitation created", description: "Add other branches after this account is activated." });
       void load();
     }
