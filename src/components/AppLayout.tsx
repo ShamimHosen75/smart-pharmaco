@@ -212,7 +212,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             <div className="hidden sm:block h-8 w-px bg-border" />
             <div className="flex items-center gap-2">
               <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-semibold">
-                 {(profile?.full_name || "S").slice(0, 2).toUpperCase()
+                 {(profile?.full_name || "S").slice(0, 2).toUpperCase()}
               </div>
               <div className="hidden md:block">
                  <p className="text-sm font-medium leading-tight">{profile?.full_name || "Staff"}</p>
