@@ -2,3 +2,6 @@
 - [x] Add sign-in and account activation, protected routes, role-aware navigation and profile editing.
 - [x] Add administrator staff account invitations, role, branch and status controls in Settings.
 - [ ] Verify authenticated staff management end-to-end — blocked until the invited owner activates their account.
+- [x] Add admin-only AI recommendations for least-privilege staff access, with review before any role assignment.
+- [ ] Owner account activation/password setup — owner must complete email confirmation in the sign-in screen; do not store pasted credentials in code.
+- [x] Add multi-branch staff assignments and branch-scoped sales views where operational data permits; local demo data cannot provide secure isolation.

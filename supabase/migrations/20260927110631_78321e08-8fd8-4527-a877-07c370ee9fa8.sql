@@ -1,0 +1,7 @@
+ALTER FUNCTION public.staff_can_manage_branch(text) SECURITY INVOKER;
+DROP POLICY "Admins remove branch assignments" ON public.staff_branch_assignments;
+CREATE POLICY "Admins remove branch assignments" ON public.staff_branch_assignments FOR DELETE TO authenticated USING (public.staff_can_manage_branch(branch_name) AND user_id <> auth.uid() AND (EXISTS (SELECT 1 FROM public.user_roles r WHERE r.user_id=auth.uid() AND r.role='super_admin') OR NOT EXISTS (SELECT 1 FROM public.user_roles r WHERE r.user_id=staff_branch_assignments.user_id AND r.role='super_admin')));
+DROP FUNCTION public.staff_has_other_branch(uuid,text);
+CREATE FUNCTION public.staff_guard_branch_removal() RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path=public AS $$ BEGIN IF (SELECT count(*) FROM public.staff_branch_assignments WHERE user_id=OLD.user_id)<=1 THEN RAISE EXCEPTION 'Cannot remove the last assigned branch'; END IF; IF EXISTS (SELECT 1 FROM public.profiles WHERE id=OLD.user_id AND branch=OLD.branch_name) THEN RAISE EXCEPTION 'Change the primary branch before removing it'; END IF; RETURN OLD; END $$;
+REVOKE EXECUTE ON FUNCTION public.staff_guard_branch_removal() FROM PUBLIC, anon, authenticated;
+CREATE TRIGGER guard_staff_branch_removal BEFORE DELETE ON public.staff_branch_assignments FOR EACH ROW EXECUTE FUNCTION public.staff_guard_branch_removal();

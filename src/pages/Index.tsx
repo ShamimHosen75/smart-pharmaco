@@ -34,10 +34,13 @@ import {
 import { useMedicineStore, getMedicineStatus } from "@/stores/medicine-store";
 import { useCustomerStore } from "@/stores/customer-store";
 import { useEmployeeStore } from "@/stores/employee-store";
+import { useAssignedBranches } from "@/hooks/use-assigned-branches";
 import { money, currencySymbol } from "@/lib/currency";
 
 const Dashboard = () => {
-  const sales = useSalesStore((s) => s.sales);
+  const allSales = useSalesStore((s) => s.sales);
+  const { branchIds } = useAssignedBranches();
+  const sales = useMemo(() => allSales.filter((s) => s.branchId && branchIds.has(s.branchId)), [allSales, branchIds]);
   const medicines = useMedicineStore((s) => s.medicines);
   const customers = useCustomerStore((s) => s.customers);
   const employees = useEmployeeStore((s) => s.employees);

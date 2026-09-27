@@ -5,29 +5,32 @@ import { supabase } from "@/integrations/supabase/client";
 
 export type StaffRole = "super_admin" | "branch_admin" | "pharmacist" | "sales_staff" | "accountant";
 type Profile = Tables<"profiles">;
-type AuthState = { user: User | null; profile: Profile | null; role: StaffRole | null; loading: boolean; refresh: () => Promise<void>; signOut: () => Promise<void> };
+type AuthState = { user: User | null; profile: Profile | null; role: StaffRole | null; assignedBranches: string[]; loading: boolean; refresh: () => Promise<void>; signOut: () => Promise<void> };
 const AuthContext = createContext<AuthState | null>(null);
 let loadSequence = 0;
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [role, setRole] = useState<StaffRole | null>(null);
+  const [assignedBranches, setAssignedBranches] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const refresh = async () => {
     const sequence = ++loadSequence;
     setLoading(true);
     const { data: { user: current }, error } = await supabase.auth.getUser();
     if (sequence !== loadSequence) return;
-    if (error || !current) { setUser(null); setProfile(null); setRole(null); setLoading(false); return; }
+    if (error || !current) { setUser(null); setProfile(null); setRole(null); setAssignedBranches([]); setLoading(false); return; }
     setUser(current);
     await supabase.rpc("claim_staff_account");
-    const [{ data: person }, { data: access }] = await Promise.all([
+    const [{ data: person }, { data: access }, { data: assignments }] = await Promise.all([
       supabase.from("profiles").select("*").eq("id", current.id).maybeSingle(),
       supabase.from("user_roles").select("role").eq("user_id", current.id).maybeSingle(),
+      supabase.from("staff_branch_assignments").select("branch_name").eq("user_id", current.id),
     ]);
     if (sequence !== loadSequence) return;
     setProfile(person?.is_active ? person : null);
-    setRole(person?.is_active ? (access?.role ?? null) : null);
+    setAssignedBranches(person?.is_active ? (assignments ?? []).map((a) => a.branch_name) : []);
+    setRole(person?.is_active && assignments?.length ? (access?.role ?? null) : null);
     setLoading(false);
   };
   useEffect(() => {
@@ -37,8 +40,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     document.addEventListener("visibilitychange", onFocus);
     return () => { subscription.unsubscribe(); document.removeEventListener("visibilitychange", onFocus); loadSequence++; };
   }, []);
-  const signOut = async () => { await supabase.auth.signOut(); setProfile(null); setRole(null); setUser(null); };
-  return <AuthContext.Provider value={{ user, profile, role, loading, refresh, signOut }}>{children}</AuthContext.Provider>;
+  const signOut = async () => { await supabase.auth.signOut(); setProfile(null); setRole(null); setAssignedBranches([]); setUser(null); };
+  return <AuthContext.Provider value={{ user, profile, role, assignedBranches, loading, refresh, signOut }}>{children}</AuthContext.Provider>;
 }
 export function useAuth() { const state = useContext(AuthContext); if (!state) throw new Error("AuthProvider missing"); return state; }
 

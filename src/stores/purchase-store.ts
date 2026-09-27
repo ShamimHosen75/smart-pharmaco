@@ -10,6 +10,7 @@ export interface PurchaseItem {
 
 export interface Purchase {
   id: string;
+  branchId: string;
   purchaseNo: string;
   companyId: string;
   companyName: string;
@@ -33,6 +34,7 @@ interface PurchaseStore {
 const initialPurchases: Purchase[] = [
   {
     id: "pu-001",
+    branchId: "br-001",
     purchaseNo: "PO-20260301-0001",
     companyId: "co-001",
     companyName: "Square Pharmaceuticals Ltd",
@@ -50,6 +52,7 @@ const initialPurchases: Purchase[] = [
   },
   {
     id: "pu-002",
+    branchId: "br-001",
     purchaseNo: "PO-20260305-0002",
     companyId: "co-002",
     companyName: "Beximco Pharmaceuticals Ltd",
@@ -67,6 +70,7 @@ const initialPurchases: Purchase[] = [
   },
   {
     id: "pu-003",
+    branchId: "br-001",
     purchaseNo: "PO-20260310-0003",
     companyId: "co-003",
     companyName: "Incepta Pharmaceuticals Ltd",

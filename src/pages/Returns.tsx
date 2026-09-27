@@ -21,6 +21,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useSalesStore, type SaleRecord, type RefundRecord, formatTimeAgo } from "@/stores/sales-store";
+import { useAssignedBranches } from "@/hooks/use-assigned-branches";
 import { toast } from "@/hooks/use-toast";
 import { money, vatPercent, vatRate } from "@/lib/currency";
 import { fmtDate } from "@/lib/format-date";
@@ -41,6 +42,7 @@ const Returns = () => {
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
 
   const sales = useSalesStore((s) => s.sales);
+  const { branchIds } = useAssignedBranches();
   const refunds = useSalesStore((s) => s.refunds);
   const addRefund = useSalesStore((s) => s.addRefund);
   const getRefundsForInvoice = useSalesStore((s) => s.getRefundsForInvoice);
@@ -50,6 +52,7 @@ const Returns = () => {
     if (invoiceSearch.length < 2) return [];
     const q = invoiceSearch.toLowerCase();
     return [...sales]
+      .filter((s) => s.branchId && branchIds.has(s.branchId))
       .filter(
         (s) =>
           s.invoiceNo.toLowerCase().includes(q) ||
@@ -57,7 +60,7 @@ const Returns = () => {
       )
       .sort((a, b) => b.date.getTime() - a.date.getTime())
       .slice(0, 10);
-  }, [invoiceSearch, sales]);
+  }, [invoiceSearch, sales, branchIds]);
 
   const selectInvoice = (sale: SaleRecord) => {
     // Calculate already-refunded quantities
@@ -99,12 +102,13 @@ const Returns = () => {
   const refundTotal = refundSubtotal + refundVat;
 
   const processRefund = () => {
-    if (!selectedSale || returnItemsSelected.length === 0) return;
+    if (!selectedSale || !selectedSale.branchId || !branchIds.has(selectedSale.branchId) || returnItemsSelected.length === 0) return;
 
     const refund: RefundRecord = {
       id: crypto.randomUUID(),
       refundNo: `RFD-${new Date().getFullYear()}${String(new Date().getMonth() + 1).padStart(2, "0")}${String(new Date().getDate()).padStart(2, "0")}-${String(refunds.length + 1).padStart(4, "0")}`,
       originalInvoiceNo: selectedSale.invoiceNo,
+      branchId: selectedSale.branchId,
       date: new Date(),
       customerName: selectedSale.customerName,
       items: returnItemsSelected.map((i) => ({ name: i.name, qty: i.returnQty, price: i.price })),
@@ -128,8 +132,8 @@ const Returns = () => {
 
   // Recent refunds
   const recentRefunds = useMemo(
-    () => [...refunds].sort((a, b) => b.date.getTime() - a.date.getTime()).slice(0, 10),
-    [refunds]
+    () => [...refunds].filter((r) => r.branchId && branchIds.has(r.branchId)).sort((a, b) => b.date.getTime() - a.date.getTime()).slice(0, 10),
+    [refunds, branchIds]
   );
 
   return (

@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
 import { useSalesStore } from "@/stores/sales-store";
-import { useBranchStore } from "@/stores/branch-store";
+import { useAssignedBranches } from "@/hooks/use-assigned-branches";
 import { exportSalesCSV, exportSalesPDF } from "@/lib/report-export";
 import { money } from "@/lib/currency";
 
@@ -33,7 +33,7 @@ function filterByRange<T extends { date: Date }>(items: T[], range: Range): T[] 
 
 const Reports = () => {
   const sales = useSalesStore((s) => s.sales);
-  const branches = useBranchStore((s) => s.branches);
+   const { branches, branchIds } = useAssignedBranches();
   const [range, setRange] = useState<Range>("today");
   const [branchId, setBranchId] = useState<string>("all");
   const [busy, setBusy] = useState(false);
@@ -41,10 +41,10 @@ const Reports = () => {
   const branchName = branches.find((b) => b.id === branchId)?.name;
 
   const scopedSales = useMemo(() => {
-    let list = sales;
+     let list = sales.filter((s) => s.branchId && branchIds.has(s.branchId));
     if (branchId !== "all") list = list.filter((s) => s.branchId === branchId);
     return filterByRange(list, range).sort((a, b) => a.date.getTime() - b.date.getTime());
-  }, [sales, branchId, range]);
+   }, [sales, branchId, range, branchIds]);
 
   const stats = useMemo(() => {
     const items = scopedSales.reduce((a, s) => a + s.items.reduce((b, i) => b + i.qty, 0), 0);
