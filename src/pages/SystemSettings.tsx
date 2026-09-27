@@ -1,5 +1,8 @@
 import { useMemo, useRef, useState, type ReactNode } from "react";
-import { Link } from "react-router-dom";
+import { useAuth, roleName } from "@/auth/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
+import StaffAccounts from "@/components/StaffAccounts";
+import { Link, useSearchParams } from "react-router-dom";
 import { useSettingsStore } from "@/stores/settings-store";
 import { useSubscriptionStore } from "@/stores/subscription-store";
 import { Button } from "@/components/ui/button";
@@ -18,9 +21,9 @@ import {
   UploadCloud, UserRound, Users, Workflow, X, type LucideIcon,
 } from "lucide-react";
 
-type Section = "profile" | "account" | "security" | "subscription" | "store" | "items" | "receipt" | "appearance" | "notifications" | "social" | "campaigns" | "metaAds" | "metaLeads" | "whatsapp" | "automations" | "integrations" | "pixels" | "api";
+type Section = "profile" | "staff" | "account" | "security" | "subscription" | "store" | "items" | "receipt" | "appearance" | "notifications" | "social" | "campaigns" | "metaAds" | "metaLeads" | "whatsapp" | "automations" | "integrations" | "pixels" | "api";
 const groups: { label: string; items: { id: Section; label: string; icon: LucideIcon }[] }[] = [
-  { label: "Account", items: [{ id: "profile", label: "Profile", icon: UserRound }, { id: "account", label: "Account", icon: Users }, { id: "security", label: "Security", icon: ShieldCheck }] },
+  { label: "Account", items: [{ id: "profile", label: "Profile", icon: UserRound }, { id: "staff", label: "Staff accounts", icon: Users }, { id: "account", label: "Account", icon: Users }, { id: "security", label: "Security", icon: ShieldCheck }] },
   { label: "Billing", items: [{ id: "subscription", label: "Subscription", icon: CreditCard }] },
   { label: "Workspace", items: [{ id: "store", label: "POS & Store", icon: Store }, { id: "items", label: "Menu Items", icon: Package }, { id: "receipt", label: "Receipt", icon: Receipt }, { id: "appearance", label: "Appearance", icon: Palette }, { id: "notifications", label: "Notifications", icon: Bell }] },
   { label: "Marketing", items: [{ id: "social", label: "Social Overview", icon: Activity }, { id: "campaigns", label: "Campaigns", icon: Megaphone }, { id: "metaAds", label: "Meta Ads", icon: Megaphone }, { id: "metaLeads", label: "Meta Leads", icon: Users }, { id: "whatsapp", label: "WhatsApp", icon: MessageCircle }, { id: "automations", label: "Automations", icon: Workflow }] },
@@ -28,6 +31,7 @@ const groups: { label: string; items: { id: Section; label: string; icon: Lucide
 ];
 const titles: Record<Section, { title: string; description: string; icon: LucideIcon }> = {
   profile: { title: "Profile details", description: "Manage your personal details and profile picture.", icon: UserRound },
+  staff: { title: "Staff accounts", description: "Invite staff and manage their access.", icon: Users },
   account: { title: "Account settings", description: "Currency, tax and regional preferences.", icon: Globe },
   security: { title: "Security", description: "Account access and protection.", icon: ShieldCheck },
   subscription: { title: "Subscription", description: "Your plans and billing workspace.", icon: CreditCard },
@@ -70,12 +74,16 @@ function Unavailable({ subject }: { subject: string }) {
 }
 
 export default function SystemSettings() {
-  const [active, setActive] = useState<Section>("profile");
+  const [params] = useSearchParams();
+  const [active, setActive] = useState<Section>(params.get("section") === "staff" ? "staff" : "profile");
   const [search, setSearch] = useState("");
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
   const profile = useSettingsStore((s) => s.profile);
   const setProfile = useSettingsStore((s) => s.setProfile);
+  const { profile: staffProfile, role, user, refresh } = useAuth();
+  const [staffDraft, setStaffDraft] = useState<{ display_name: string; phone: string; job_title: string; bio: string } | null>(null);
+  const own = staffDraft ?? { display_name: staffProfile?.display_name ?? "", phone: staffProfile?.phone ?? "", job_title: staffProfile?.job_title ?? "", bio: staffProfile?.bio ?? "" };
   const store = useSettingsStore((s) => s.storeInfo);
   const setStore = useSettingsStore((s) => s.setStoreInfo);
   const global = useSettingsStore((s) => s.global);
@@ -86,7 +94,7 @@ export default function SystemSettings() {
   const setMarketing = useSettingsStore((s) => s.setMarketing);
   const plans = useSubscriptionStore((s) => s.plans);
   const tenants = useSubscriptionStore((s) => s.tenants);
-  const filtered = useMemo(() => groups.map((group) => ({ ...group, items: group.items.filter((item) => item.label.toLowerCase().includes(search.toLowerCase().trim())) })).filter((group) => group.items.length), [search]);
+  const filtered = useMemo(() => groups.map((group) => ({ ...group, items: group.items.filter((item) => (role === "super_admin" || role === "branch_admin" || ["profile", "account", "security"].includes(item.id)) && item.label.toLowerCase().includes(search.toLowerCase().trim())) })).filter((group) => group.items.length), [search, role]);
   const section = titles[active];
   const Icon = section.icon;
   const exportConfig = () => {
@@ -104,6 +112,12 @@ export default function SystemSettings() {
     reader.readAsDataURL(file);
   };
   const saved = () => toast({ title: "Settings saved on this device" });
+  const saveStaffProfile = async () => {
+    if (!user) return;
+    const { error } = await supabase.from("profiles").update(own).eq("id", user.id);
+    if (error) toast({ title: error.message, variant: "destructive" });
+    else { await refresh(); setStaffDraft(null); toast({ title: "Profile saved" }); }
+  };
   const link = (to: string, text: string) => <Button asChild variant="outline" size="sm"><Link to={to}>{text}<ChevronRight /></Link></Button>;
 
   return <div className="animate-fade-in min-h-full rounded-md border border-border bg-card p-4 sm:p-5">
@@ -114,13 +128,15 @@ export default function SystemSettings() {
       </aside>
       <div className="min-w-0"><div className="flex items-center gap-3 border-b border-border px-4 py-3 sm:px-5"><span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary"><Icon className="h-4 w-4"/></span><div><h2 className="text-sm font-semibold">{section.title}</h2><p className="text-xs text-muted-foreground">{section.description}</p></div></div>
         <div className="px-4 sm:px-5">
-          {active === "profile" && <>
-            <Block title="Public profile" description="Your display information for this workspace."><Field label="Display name"><Input value={profile.displayName} onChange={(e) => setProfile({ displayName: e.target.value })} /></Field><Row label="Public profile" hint="Preference only; a public link needs an online account."><Switch aria-label="Public profile" checked={profile.publicProfile} onCheckedChange={(v) => setProfile({ publicProfile: v })}/></Row></Block>
+           {active === "profile" && <>
+             <Block title="Staff identity" description="Verified account and assigned access."><p className="text-sm">{staffProfile?.full_name} · {user?.email}</p><p className="text-xs text-muted-foreground">{role ? roleName[role] : "No assigned role"} · {staffProfile?.branch}</p></Block>
+             <Block title="Display" description="Your display information for this workspace."><Field label="Display name"><Input value={own.display_name} onChange={(e) => setStaffDraft({ ...own, display_name: e.target.value })} /></Field><Row label="Public profile" hint="Preference only; a public link is not connected."><Switch aria-label="Public profile" checked={profile.publicProfile} onCheckedChange={(v) => setProfile({ publicProfile: v })}/></Row></Block>
             <Block title="Profile picture" description="Shown on your settings profile."><div className="flex items-center gap-3"><div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-full bg-primary text-lg font-bold text-primary-foreground">{profile.avatar ? <img src={profile.avatar} alt="Your profile" className="h-full w-full object-cover"/> : (profile.displayName || "M").charAt(0).toUpperCase()}</div><div className="flex-1"><input ref={fileRef} type="file" accept="image/svg+xml,image/png,image/jpeg" className="hidden" onChange={(e) => { uploadAvatar(e.target.files?.[0]); e.target.value = ""; }}/><Button variant="outline" className="h-20 w-full border-dashed" onClick={() => fileRef.current?.click()}><UploadCloud/> Click to upload <span className="hidden sm:inline">or drag & drop</span></Button><p className="mt-1 text-center text-[11px] text-muted-foreground">SVG, JPG or PNG (1 MB each)</p></div>{profile.avatar && <Button title="Remove picture" aria-label="Remove picture" size="icon" variant="ghost" onClick={() => setProfile({ avatar: "" })}><X/></Button>}</div><Row label="Use avatar on printed receipts" hint="Saved as a preference; current receipts print the pharmacy identity only."><Switch aria-label="Use avatar on printed receipts" checked={profile.printAvatar} onCheckedChange={(v) => setProfile({ printAvatar: v })}/></Row></Block>
-            <Block title="Personal details" description="Your name, role and contact for internal records."><div className="grid gap-3 sm:grid-cols-2"><Field label="Full name"><Input value={profile.fullName} onChange={(e) => setProfile({ fullName: e.target.value })}/></Field><Field label="Job title"><Input value={profile.jobTitle} onChange={(e) => setProfile({ jobTitle: e.target.value })}/></Field><Field label="Phone"><Input type="tel" value={profile.phone} onChange={(e) => setProfile({ phone: e.target.value })}/></Field><Field label="Interface language"><Select value={global.language} onValueChange={(v) => setGlobal({ language: v })}><SelectTrigger><SelectValue/></SelectTrigger><SelectContent><SelectItem value="en">English</SelectItem><SelectItem value="bn">বাংলা (Bangla)</SelectItem><SelectItem value="ar">Arabic</SelectItem><SelectItem value="fr">French</SelectItem><SelectItem value="es">Spanish</SelectItem></SelectContent></Select></Field></div><Field label="Bio"><Textarea maxLength={300} value={profile.bio} onChange={(e) => setProfile({ bio: e.target.value })} rows={3}/><p className="text-right text-[11px] text-muted-foreground">{profile.bio.length}/300</p></Field><Button onClick={saved}><Check/> Save changes</Button></Block>
+             <Block title="Personal details" description="Your contact details for internal records."><div className="grid gap-3 sm:grid-cols-2"><Field label="Job title"><Input value={own.job_title} onChange={(e) => setStaffDraft({ ...own, job_title: e.target.value })}/></Field><Field label="Phone"><Input type="tel" value={own.phone} onChange={(e) => setStaffDraft({ ...own, phone: e.target.value })}/></Field><Field label="Interface language"><Select value={global.language} onValueChange={(v) => setGlobal({ language: v })}><SelectTrigger><SelectValue/></SelectTrigger><SelectContent><SelectItem value="en">English</SelectItem><SelectItem value="bn">বাংলা (Bangla)</SelectItem><SelectItem value="ar">Arabic</SelectItem><SelectItem value="fr">French</SelectItem><SelectItem value="es">Spanish</SelectItem></SelectContent></Select></Field></div><Field label="Bio"><Textarea maxLength={300} value={own.bio} onChange={(e) => setStaffDraft({ ...own, bio: e.target.value })} rows={3}/><p className="text-right text-[11px] text-muted-foreground">{own.bio.length}/300</p></Field><Button onClick={() => void saveStaffProfile()}><Check/> Save changes</Button></Block>
           </>}
+           {active === "staff" && <div className="py-5"><StaffAccounts/></div>}
           {active === "account" && <><Block title="Tax & currency" description="Used for prices and invoices."><div className="grid gap-3 sm:grid-cols-3"><Field label="Currency"><Select value={global.currency} onValueChange={(v) => setGlobal({ currency: v as typeof global.currency })}><SelectTrigger><SelectValue/></SelectTrigger><SelectContent>{[["BDT", "BDT (৳)"], ["USD", "USD ($)"], ["INR", "INR (₹)"], ["EUR", "EUR (€)"], ["GBP", "GBP (£)"], ["SAR", "SAR (﷼)"], ["AED", "AED (د.إ)"]].map(([v, name]) => <SelectItem key={v} value={v}>{name}</SelectItem>)}</SelectContent></Select></Field><Field label="VAT %"><Input type="number" min="0" max="100" value={global.vat} onChange={(e) => setGlobal({ vat: e.target.value })}/></Field><Field label="Tax ID"><Input value={global.taxId} onChange={(e) => setGlobal({ taxId: e.target.value })}/></Field></div></Block><Block title="Regional" description="Local formats for your workspace."><div className="grid gap-3 sm:grid-cols-2"><Field label="Timezone"><Select value={global.timezone} onValueChange={(v) => setGlobal({ timezone: v })}><SelectTrigger><SelectValue/></SelectTrigger><SelectContent>{["Asia/Dhaka", "UTC", "EST", "PST", "GST", "IST"].map((v) => <SelectItem key={v} value={v}>{v}</SelectItem>)}</SelectContent></Select></Field><Field label="Date format"><Select value={global.dateFormat} onValueChange={(v) => setGlobal({ dateFormat: v })}><SelectTrigger><SelectValue/></SelectTrigger><SelectContent>{["DD/MM/YYYY", "MM/DD/YYYY", "YYYY-MM-DD"].map((v) => <SelectItem key={v} value={v}>{v}</SelectItem>)}</SelectContent></Select></Field></div></Block></>}
-          {active === "security" && <Unavailable subject="Password and sign-in settings"/>}
+           {active === "security" && <Block title="Sign-in security" description="Your account uses verified email and password or Google sign-in."><p className="text-sm">Signed in as {user?.email}</p><p className="text-xs text-muted-foreground">Access is determined by your administrator-assigned staff role.</p></Block>}
           {active === "subscription" && <Block title="Plans & billing" description="Manage your SaaS plans and tenant subscriptions."><p className="text-sm">{plans.length} plans · {tenants.length} tenants</p>{link("/subscriptions", "Open subscriptions")}<p className="text-xs text-muted-foreground">Payment status here is recorded manually; live payments are not connected.</p></Block>}
           {active === "store" && <><Block title="Pharmacy details" description="Shown on invoices and receipts."><div className="grid gap-3 sm:grid-cols-2"><Field label="Pharmacy name"><Input value={store.name} onChange={(e) => setStore({ name: e.target.value })}/></Field><Field label="Phone"><Input value={store.phone} onChange={(e) => setStore({ phone: e.target.value })}/></Field><Field label="Email"><Input type="email" value={store.email} onChange={(e) => setStore({ email: e.target.value })}/></Field><Field label="License no."><Input value={store.license} onChange={(e) => setStore({ license: e.target.value })}/></Field></div><Field label="Address"><Input value={store.address} onChange={(e) => setStore({ address: e.target.value })}/></Field></Block><Block title="Branches" description="Manage locations and their contacts.">{link("/branches", "Manage branches")}</Block></>}
           {active === "items" && <Block title="Medicines" description="Catalog, pricing and stock are managed in inventory.">{link("/medicines", "Open medicines")}</Block>}

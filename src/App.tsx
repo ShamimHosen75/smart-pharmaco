@@ -2,7 +2,9 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
+import { AuthProvider, useAuth, accessByRole } from "./auth/AuthContext";
+import StaffLogin from "./pages/StaffLogin";
 import AppLayout from "./components/AppLayout";
 import Index from "./pages/Index";
 import Medicines from "./pages/Medicines";
@@ -29,34 +31,43 @@ const ThemedApp = ({ children }: { children: React.ReactNode }) => {
   return <>{children}</>;
 };
 
+function ProtectedApp() {
+  const { user, role, loading } = useAuth();
+  const location = useLocation();
+  if (loading) return <div className="flex min-h-screen items-center justify-center bg-background text-muted-foreground">Checking staff access…</div>;
+  if (!user || !role) return <Navigate to="/login" replace />;
+  const allowed = accessByRole[role];
+  if (!allowed.includes(location.pathname) && location.pathname !== "/") return <Navigate to="/" replace />;
+  return <AppLayout><Routes>
+    <Route path="/" element={<Index />} />
+    <Route path="/medicines" element={<Medicines />} />
+    <Route path="/pos" element={<POS />} />
+    <Route path="/returns" element={<Returns />} />
+    <Route path="/receipts" element={<Receipts />} />
+    <Route path="/purchases" element={<Purchases />} />
+    <Route path="/customers" element={<Customers />} />
+    <Route path="/reports" element={<Reports />} />
+    <Route path="/settings" element={<SystemSettings />} />
+    <Route path="/companies" element={<Companies />} />
+    <Route path="/alerts" element={<Alerts />} />
+    <Route path="/accounting" element={<Accounting />} />
+    <Route path="/employees" element={<Employees />} />
+    <Route path="/branches" element={<Branches />} />
+    <Route path="/subscriptions" element={<Subscriptions />} />
+    <Route path="*" element={<NotFound />} />
+  </Routes></AppLayout>;
+}
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <ThemedApp>
-          <AppLayout>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/medicines" element={<Medicines />} />
-            <Route path="/pos" element={<POS />} />
-            <Route path="/returns" element={<Returns />} />
-            <Route path="/receipts" element={<Receipts />} />
-            <Route path="/purchases" element={<Purchases />} />
-            <Route path="/customers" element={<Customers />} />
-            <Route path="/reports" element={<Reports />} />
-            <Route path="/settings" element={<SystemSettings />} />
-            <Route path="/companies" element={<Companies />} />
-            <Route path="/alerts" element={<Alerts />} />
-            <Route path="/accounting" element={<Accounting />} />
-            <Route path="/employees" element={<Employees />} />
-            <Route path="/branches" element={<Branches />} />
-            <Route path="/subscriptions" element={<Subscriptions />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-          </AppLayout>
-        </ThemedApp>
+        <AuthProvider><ThemedApp><Routes>
+          <Route path="/login" element={<StaffLogin />} />
+          <Route path="/*" element={<ProtectedApp />} />
+        </Routes></ThemedApp></AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>

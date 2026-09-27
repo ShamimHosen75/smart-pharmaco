@@ -49,6 +49,7 @@ import {
 } from "@/stores/employee-store";
 import { useBranchStore } from "@/stores/branch-store";
 import { money } from "@/lib/currency";
+import { Link } from "react-router-dom";
 
 const roleBadgeVariant = (role: Role) => {
   switch (role) {
@@ -153,11 +154,9 @@ const Employees = () => {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-heading font-bold">Employees</h1>
-          <p className="text-sm text-muted-foreground">Manage staff, roles, and attendance</p>
+          <p className="text-sm text-muted-foreground">Local payroll and attendance records. Staff sign-in and access are managed separately.</p>
         </div>
-        <Button onClick={openAdd}>
-          <Plus className="mr-2 h-4 w-4" />Add Employee
-        </Button>
+        <div className="flex flex-wrap gap-2"><Button asChild variant="outline"><Link to="/settings?section=staff">Staff account access</Link></Button><Button onClick={openAdd}><Plus className="mr-2 h-4 w-4" />Add payroll record</Button></div>
       </div>
 
       {/* Stats */}
@@ -384,7 +383,7 @@ const Employees = () => {
                 <Input placeholder="+880 1711 000000" value={formPhone} onChange={(e) => setFormPhone(e.target.value)} />
               </div>
               <div className="space-y-2">
-                <Label>Role</Label>
+                <Label>Payroll role (not account access)</Label>
                 <Select value={formRole} onValueChange={(v) => setFormRole(v as Role)}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
@@ -404,7 +403,7 @@ const Employees = () => {
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label>Monthly Salary ($)</Label>
+                <Label>Monthly Salary (৳)</Label>
                 <Input type="number" placeholder="0" value={formSalary} onChange={(e) => setFormSalary(e.target.value)} />
               </div>
             </div>

@@ -25,6 +25,9 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useAuth, accessByRole, roleName } from "@/auth/AuthContext";
+import { Button } from "@/components/ui/button";
+import { LogOut } from "lucide-react";
 
 const navGroups = [
   {
@@ -74,6 +77,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const location = useLocation();
   const isMobile = useIsMobile();
+  const { role, profile, signOut } = useAuth();
 
   // close mobile drawer on route change
   useEffect(() => {
@@ -132,7 +136,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
         {/* Nav */}
         <nav className="flex-1 overflow-y-auto py-4 px-2 space-y-6">
-          {navGroups.map((group) => (
+          {navGroups.map((group) => ({ ...group, items: group.items.filter((item) => role && accessByRole[role].includes(item.path)) })).filter((group) => group.items.length > 0).map((group) => (
             <div key={group.label}>
               {(!collapsed || isMobile) && (
                 <p className="px-3 mb-2 text-[10px] font-semibold uppercase tracking-wider text-sidebar-foreground/40">
@@ -208,13 +212,14 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             <div className="hidden sm:block h-8 w-px bg-border" />
             <div className="flex items-center gap-2">
               <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-semibold">
-                SA
+                 {(profile?.full_name || "S").slice(0, 2).toUpperCase()}
               </div>
               <div className="hidden md:block">
-                <p className="text-sm font-medium leading-tight">Super Admin</p>
-                <p className="text-[11px] text-muted-foreground">Main Branch</p>
+                 <p className="text-sm font-medium leading-tight">{profile?.full_name || "Staff"}</p>
+                 <p className="text-[11px] text-muted-foreground">{role ? roleName[role] : ""} · {profile?.branch}</p>
               </div>
             </div>
+            <Button size="icon" variant="ghost" title="Sign out" aria-label="Sign out" onClick={() => void signOut()}><LogOut className="h-4 w-4"/></Button>
           </div>
         </header>
 
