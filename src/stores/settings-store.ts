@@ -1,4 +1,16 @@
 import { create } from "zustand";
+import { persist } from "zustand/middleware";
+
+export interface ProfileSettings {
+  displayName: string;
+  fullName: string;
+  jobTitle: string;
+  phone: string;
+  bio: string;
+  avatar: string;
+  publicProfile: boolean;
+  printAvatar: boolean;
+}
 
 export interface StoreInfo {
   name: string;
@@ -44,6 +56,7 @@ export interface MarketingSettings {
 }
 
 interface SettingsStore {
+  profile: ProfileSettings;
   storeInfo: StoreInfo;
   global: GlobalSettings;
   theme: ThemeSettings;
@@ -52,6 +65,7 @@ interface SettingsStore {
   setGlobal: (data: Partial<GlobalSettings>) => void;
   setTheme: (data: Partial<ThemeSettings>) => void;
   setMarketing: (data: Partial<MarketingSettings>) => void;
+  setProfile: (data: Partial<ProfileSettings>) => void;
 }
 
 export const CURRENCY_SYMBOLS: Record<GlobalSettings["currency"], string> = {
@@ -64,7 +78,17 @@ export const CURRENCY_SYMBOLS: Record<GlobalSettings["currency"], string> = {
   AED: "د.إ",
 };
 
-export const useSettingsStore = create<SettingsStore>((set) => ({
+export const useSettingsStore = create<SettingsStore>()(persist((set) => ({
+  profile: {
+    displayName: "MediCore Pharmacy",
+    fullName: "",
+    jobTitle: "",
+    phone: "",
+    bio: "",
+    avatar: "",
+    publicProfile: false,
+    printAvatar: false,
+  },
   storeInfo: {
     name: "MediCore Pharmacy",
     phone: "+880 1711 000000",
@@ -109,4 +133,6 @@ export const useSettingsStore = create<SettingsStore>((set) => ({
   setGlobal: (data) => set((s) => ({ global: { ...s.global, ...data } })),
   setTheme: (data) => set((s) => ({ theme: { ...s.theme, ...data } })),
   setMarketing: (data) => set((s) => ({ marketing: { ...s.marketing, ...data } })),
-}));
+  setProfile: (data) => set((s) => ({ profile: { ...s.profile, ...data } })),
+}), { name: "medicore-settings", partialize: (state) => ({ profile: state.profile, storeInfo: state.storeInfo, global: state.global, theme: state.theme, marketing: state.marketing }) }
+));
