@@ -14,7 +14,7 @@ export default function StaffLogin() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
-  const [message, setMessage] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   if (!loading && role) return <Navigate to="/" replace />;
   const submit = async (event: FormEvent) => {
     event.preventDefault(); setBusy(true); setMessage("");
